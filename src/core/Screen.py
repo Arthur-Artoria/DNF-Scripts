@@ -1,29 +1,61 @@
+from collections.abc import Callable
+from typing import Any
 import mss
+import mss.models
+import mss.screenshot
 import mss.tools
 import numpy as np
 import cv2 as cv
 
-monitor = {"top": 0, "left": 0, "width": 800, "height": 600}
+type Matcher = Callable[[], Any]
 
-# 创建一个 MSS 对象
-with mss.mss() as sct:
-    while True:
-        shot = sct.grab(monitor)
-        shot = np.array(shot)
-        shotGray = cv.cvtColor(shot, cv.COLOR_BGR2GRAY)
-        
-        target = cv.cvtColor(cv.imread("images/target.png"), cv.COLOR_BGR2GRAY)
-        
-        res = cv.matchTemplate(shotGray, target, cv.TM_CCOEFF_NORMED)
-        
-        locations = np.where(res >= 0.8)
-        
-        for pt in zip(*locations[::-1]):
-            cv.rectangle(shot, pt, (pt[0] + 80, pt[1] + 30), (0, 0, 255), 2)
-        
-        cv.imshow("DNF", shot)
-        key = cv.waitKey(10)
-        if key == ord('q'):
-            cv.destroyAllWindows()
-            break
 
+__shot: mss.screenshot.ScreenShot
+__shotArray: np.ndarray
+__monitor = {"top": 0, "left": 0, "width": 800, "height": 600}
+__matcherList: list[Matcher] = []
+
+
+def setup():
+    with mss.mss() as sct:
+        while True:
+
+            __getScreen(sct)
+            __callMatcherList()
+
+            if __close():
+                break
+
+
+def __getScreen(sct):
+    global __shot
+    global __shotArray
+
+    __shot = sct.grab(__monitor)
+    __shotArray = np.array(__shot)
+
+
+def __close() -> bool:
+    key = cv.waitKey(10)
+    return key == ord("q")
+
+
+def register(fn: Matcher):
+    __matcherList.append(fn)
+
+
+def __callMatcherList():
+    for matcher in __matcherList:
+        matcher()
+
+
+def __matchTemplate(shot: cv.typing.MatLike, target: cv.typing.MatLike):
+    res = cv.matchTemplate(shot, target, cv.TM_CCOEFF_NORMED)
+    locations = np.where(res >= 0.8)
+    return locations
+
+
+def match(imgPath: str):
+    shotGray = cv.cvtColor(__shotArray, cv.COLOR_BGR2GRAY)
+    target = cv.cvtColor(cv.imread(imgPath), cv.COLOR_BGR2GRAY)
+    return __matchTemplate(shotGray, target)
