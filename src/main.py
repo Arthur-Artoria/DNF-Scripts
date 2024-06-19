@@ -1,4 +1,5 @@
+from core import Window
 import core.Screen as Screen
 
-Screen.register(lambda : Screen.match("images/target.png"))
 Screen.setup()
+Window.setWindow()
