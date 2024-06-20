@@ -1,21 +1,23 @@
 from collections.abc import Callable
 from typing import Any
 import mss
+import mss.base
 import mss.models
 import mss.screenshot
 import mss.tools
 import numpy as np
 import cv2 as cv
+import pyautogui
 
-type Matcher = Callable[[], Any]
+type Matcher = Callable[[], bool | None]
 
-
+__screenWidth, __screenHeight = pyautogui.size()
 __shot: mss.screenshot.ScreenShot
 __shotArray: np.ndarray
-__monitor = {"top": 0, "left": 0, "width": 800, "height": 600}
+__monitor = {"top": 0, "left": 0, "width":  __screenWidth , "height": __screenHeight}
 __matcherList: list[Matcher] = []
 
-
+print(__monitor)
 def setup():
     with mss.mss() as sct:
         while True:
@@ -27,7 +29,14 @@ def setup():
                 break
 
 
-def __getScreen(sct):
+def updateMonitorSize(width: int, height: int):
+    global __monitor
+    __monitor["width"] = width
+    __monitor["height"] = height
+    
+
+
+def __getScreen(sct: mss.base.MSSBase):
     global __shot
     global __shotArray
 
@@ -46,7 +55,9 @@ def register(fn: Matcher):
 
 def __callMatcherList():
     for matcher in __matcherList:
-        matcher()
+        isRemove = matcher()
+        if isRemove:
+            __matcherList.remove(matcher)
 
 
 def __matchTemplate(shot: cv.typing.MatLike, target: cv.typing.MatLike):
