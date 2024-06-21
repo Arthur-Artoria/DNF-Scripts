@@ -19,4 +19,3 @@ class Scene:
 if __name__ == "__main__":
     # 测试
     scene = Scene("test", "images/target.png")
-    Screen.setup()
