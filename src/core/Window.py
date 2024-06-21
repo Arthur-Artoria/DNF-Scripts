@@ -1,8 +1,7 @@
 from time import sleep
 import win32gui
-
-from core import Screen
-from core import Controller
+from services import Screen
+from services import Controller
 
 __handler: int
 __rect: tuple[int, int, int, int]
@@ -45,5 +44,5 @@ def __moveWindow():
     # win32gui.MoveWindow(__handler, -8, -1, width, height, True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setWindow()

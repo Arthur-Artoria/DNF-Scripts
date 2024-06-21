@@ -1,5 +1,5 @@
 from core import Window
-import core.Screen as Screen
+from services import Screen
 
 Screen.setup()
 Window.setWindow()
