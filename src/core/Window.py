@@ -1,5 +1,6 @@
 from time import sleep
 import win32gui
+
 from services import Screen
 from services import Controller
 
@@ -22,7 +23,6 @@ def __getWindow():
     win32gui.SetForegroundWindow(__handler)
 
 
-# TODO：发送 ESC 按键，打开控制菜单
 def __openController():
     sleep(1)
     Controller.press("EC")
@@ -30,6 +30,7 @@ def __openController():
 
 def __setWindowSize():
     global __rect
+
     locations = Screen.match("images/settings.png")
     print(locations)
     # TODO：通过游戏菜单调整游戏窗口大小

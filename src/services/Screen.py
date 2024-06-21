@@ -11,37 +11,21 @@ import pyautogui
 
 type Matcher = Callable[[], bool | None]
 
-__screenWidth, __screenHeight = pyautogui.size()
-__shot: mss.screenshot.ScreenShot
-__shotArray: np.ndarray
-__monitor = {"top": 0, "left": 0, "width":  __screenWidth , "height": __screenHeight}
+SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
+
+__monitor = {"top": 0, "left": 0, "width": SCREEN_WIDTH, "height": SCREEN_HEIGHT}
 __matcherList: list[Matcher] = []
-
-print(__monitor)
-def setup():
-    with mss.mss() as sct:
-        while True:
-
-            __getScreen(sct)
-            __callMatcherList()
-
-            if __close():
-                break
 
 
 def updateMonitorSize(width: int, height: int):
     global __monitor
     __monitor["width"] = width
     __monitor["height"] = height
-    
 
 
-def __getScreen(sct: mss.base.MSSBase):
-    global __shot
-    global __shotArray
-
-    __shot = sct.grab(__monitor)
-    __shotArray = np.array(__shot)
+def __getScreen():
+    with mss.mss() as sct:
+        return np.array(sct.grab(__monitor))
 
 
 def __close() -> bool:
@@ -67,6 +51,7 @@ def __matchTemplate(shot: cv.typing.MatLike, target: cv.typing.MatLike):
 
 
 def match(imgPath: str):
-    shotGray = cv.cvtColor(__shotArray, cv.COLOR_BGR2GRAY)
+    shot = __getScreen()
+    shotGray = cv.cvtColor(shot, cv.COLOR_BGR2GRAY)
     target = cv.cvtColor(cv.imread(imgPath), cv.COLOR_BGR2GRAY)
     return __matchTemplate(shotGray, target)
