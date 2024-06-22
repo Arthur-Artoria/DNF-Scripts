@@ -1,13 +1,20 @@
 import os
-from services import Controller
+import sys
+from time import sleep
 
+currentPath = os.path.dirname(os.path.realpath(__file__))
+parentPath = os.path.dirname(currentPath)
+
+sys.path.append(parentPath)
+sys.path.append("src/services/")
+
+from services import Controller
 
 __BASE_PATH = "images/roles"
 __roleList: list[str] = []
 __roleIndex: int = 0
 
 
-# TODO：添加 角色名称 的截图
 def __getRoleList():
     global __roleList
     __roleList = list(
@@ -28,9 +35,13 @@ def selectRole():
     role = __roleList[__roleIndex]
     Controller.clickImg(role)
     __roleIndex += 1
-    __startGame()
+    # __startGame()
     return role
 
 
 if __name__ == "__main__":
-    print(__getRoleList())
+    sleep(3)
+    Controller.setup()
+    selectRole()
+    Controller.press("SP")
+    Controller.close()

@@ -1,5 +1,5 @@
-from core import Window
-from services import Screen
+from core.Dungeon import Dungeon
 
-Screen.setup()
-Window.setWindow()
+# from services import Screen
+
+Dungeon("1111")
