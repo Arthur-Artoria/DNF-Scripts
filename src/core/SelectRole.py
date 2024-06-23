@@ -1,6 +1,6 @@
 import os
 import sys
-from time import sleep
+import time
 
 currentPath = os.path.dirname(os.path.realpath(__file__))
 parentPath = os.path.dirname(currentPath)
@@ -22,7 +22,6 @@ def __getRoleList():
     )
 
 
-# TODO: 添加 开始游戏 的截图
 def __startGame():
     Controller.clickImg("images/start.png")
 
@@ -35,12 +34,11 @@ def selectRole():
     role = __roleList[__roleIndex]
     Controller.clickImg(role)
     __roleIndex += 1
-    # __startGame()
     return role
 
 
 if __name__ == "__main__":
-    sleep(3)
+    time.sleep(3)
     Controller.setup()
     selectRole()
     Controller.press("SP")

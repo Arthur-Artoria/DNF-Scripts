@@ -6,52 +6,48 @@ import mss.models
 import mss.screenshot
 import mss.tools
 import numpy as np
+from numpy._typing import NDArray
 import cv2 as cv
 import pyautogui
+from constants import Monitor
 
-type Matcher = Callable[[], bool | None]
+type Point = tuple[int, int]
+type Locations = tuple[NDArray[np.intp], ...]
+type Rect = tuple[int, int, int, int]
 
-SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
-
-__monitor = {"top": 0, "left": 0, "width": SCREEN_WIDTH, "height": SCREEN_HEIGHT}
-__matcherList: list[Matcher] = []
+__monitor = Monitor.SCREEN_MONITOR
 
 
-def updateMonitorSize(width: int, height: int):
+def updateMonitor(monitor: Monitor.Monitor):
     global __monitor
-    __monitor["width"] = width
-    __monitor["height"] = height
+    __monitor = monitor
 
 
 def __getScreen():
     with mss.mss() as sct:
-        return np.array(sct.grab(__monitor))
+        return cv.cvtColor(np.array(sct.grab(__monitor)), cv.COLOR_BGR2GRAY)  # type: ignore
 
 
-def __close() -> bool:
-    key = cv.waitKey(10)
-    return key == ord("q")
-
-
-def register(fn: Matcher):
-    __matcherList.append(fn)
-
-
-def __callMatcherList():
-    for matcher in __matcherList:
-        isRemove = matcher()
-        if isRemove:
-            __matcherList.remove(matcher)
-
-
-def __matchTemplate(shot: cv.typing.MatLike, target: cv.typing.MatLike):
-    res = cv.matchTemplate(shot, target, cv.TM_CCOEFF_NORMED)
+def __matchTemplate(shotGray: cv.typing.MatLike, target: cv.typing.MatLike):
+    res = cv.matchTemplate(shotGray, target, cv.TM_CCOEFF_NORMED)
     locations = np.where(res >= 0.8)
     return locations
 
 
-def match(imgPath: str):
-    shot = __getScreen()
-    shotGray = cv.cvtColor(shot, cv.COLOR_BGR2GRAY)
+def match(imgPath: str, shotGray=None, area: Rect | None = None):
+    if shotGray is None:
+        shotGray = __getScreen()
+
+    if area is not None:
+        shotGray = shotGray[area[1] : area[3], area[0] : area[2]]
+
     target = cv.cvtColor(cv.imread(imgPath), cv.COLOR_BGR2GRAY)
     return __matchTemplate(shotGray, target)
+
+
+def getFirstPoint(locations: Locations, area: Rect | None = None) -> None | Point:
+    for pt in zip(*locations[::-1]):
+        x, y = int(pt[0]), int(pt[1])
+        if area is not None:
+            x, y = x + area[0], y + area[1]
+        return x, y

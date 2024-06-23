@@ -5,8 +5,7 @@ from numpy._typing import NDArray
 import serial
 import ch9329Comm
 from services import Screen
-from constants import Keyboard
-
+from constants import Keyboard, Monitor
 
 type Offset = dict[Literal["x", "y"], int]
 
@@ -36,7 +35,7 @@ def __extendKeyboard():
 
 def __initMouse():
     global __mouse
-    __mouse = ch9329Comm.mouse.DataComm(Screen.SCREEN_WIDTH, Screen.SCREEN_HEIGHT)
+    __mouse = ch9329Comm.mouse.DataComm(Monitor.SCREEN_WIDTH, Monitor.SCREEN_HEIGHT)
 
 
 def close():
@@ -44,10 +43,15 @@ def close():
 
 
 def press(key: str, seconds: float = 0.5):
-    __keyboard.send_data(Keyboard.options[key]["key"])
+    data = "".join(map(lambda x: Keyboard.options[x]["key"], key.split(" ")))
+    __keyboard.send_data(data)
     time.sleep(seconds)
     __keyboard.release()
     time.sleep(0.5)
+
+
+def release():
+    __keyboard.release()
 
 
 def click(locations: tuple[NDArray[np.intp], ...], offset: Offset | None = None):
@@ -72,7 +76,8 @@ def clickImg(imgPath: str, offset: Offset | None = None):
 
 
 if __name__ == "__main__":
-    time.sleep(3)
+    time.sleep(0.5)
     setup()
-    press("Esc")
+    press("Up")
     close()
+#

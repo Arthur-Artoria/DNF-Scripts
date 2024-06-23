@@ -30,4 +30,8 @@ options = {
     ";": {"key": ";;", "code": b"\x33"},
     "Left": {"key": "LE", "code": b"\x50"},
     "Right": {"key": "RI", "code": b"\x4F"},
+    "Up": {"key": "UP", "code": b"\x52"},
+    "Down": {"key": "DO", "code": b"\x51"},
+    "Delete": {"key": "DE", "code": b"\x4C"},
+    "ShiftRight": {"key": "SH", "code": b"\xE5"},
 }
