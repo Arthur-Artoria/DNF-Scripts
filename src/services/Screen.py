@@ -51,3 +51,7 @@ def getFirstPoint(locations: Locations, area: Rect | None = None) -> None | Poin
         if area is not None:
             x, y = x + area[0], y + area[1]
         return x, y
+
+
+def exist(target: str, area: Rect | None = None) -> bool:
+    return getFirstPoint(match(target, area), area) is not None

@@ -33,5 +33,7 @@ options = {
     "Up": {"key": "UP", "code": b"\x52"},
     "Down": {"key": "DO", "code": b"\x51"},
     "Delete": {"key": "DE", "code": b"\x4C"},
-    "ShiftRight": {"key": "SH", "code": b"\xE5"},
+    "ShiftRight": {"key": "SR", "code": b"\xE5"},
+    "ShiftLeft": {"key": "SL", "code": b"\xE1"},
+    "Tab": {"key": "TA", "code": b"\x2B"},
 }

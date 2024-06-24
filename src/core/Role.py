@@ -12,48 +12,24 @@ type Direction = Literal[
 
 
 class Role:
-    # TODO: 临时方案，后续需要优化
-    # 旅人
-    __offset: tuple = (20, 180)
-
-    # 奶妈
-    # __offset: tuple = (20, 200)
-
     __refreshRoleLocationDirectionList: list[Direction] = [
         "Down Right",
         "Up Right",
         "Down Left",
         "Up Left",
     ]
-
-    __skillList = [
-        # 旅人
-        {"key": "Q", "CD": 10, "dispatch": 0, "duration": 0.5},
-        {"key": "A", "CD": 5.8, "dispatch": 0, "duration": 0.5},
-        {"key": "S", "CD": 11.2, "dispatch": 0, "duration": 0.5},
-        {"key": "W", "CD": 12.4, "dispatch": 0, "duration": 0.5},
-        {"key": "D", "CD": 27.7, "dispatch": 0, "duration": 0.5},
-        {"key": "R", "CD": 37.2, "dispatch": 0, "duration": 0.5},
-        # 奶妈
-        # {"key": "F", "CD": 12, "dispatch": 0, "duration": 0.5},
-        # {"key": "D", "CD": 12, "dispatch": 0, "duration": 2},
-        # {"key": "A", "CD": 9, "dispatch": 0, "duration": 0.5},
-        # {"key": "E", "CD": 6, "dispatch": 0, "duration": 0.5},
-        # {"key": "Q", "CD": 12, "dispatch": 0, "duration": 0.5},
-        # {"key": "S", "CD": 5.4, "dispatch": 0, "duration": 0.5},
-        # {"key": "W", "CD": 15, "dispatch": 0, "duration": 0.5},
-        # {"key": "R", "CD": 13.5, "dispatch": 0, "duration": 0.5},
-    ]
-
-    __ticket = {"key": "Up Down Space", "CD": 275, "dispatch": 0, "duration": 5}
-    # __ticket = {"key": "V", "CD": 275, "dispatch": 0, "duration": 6}
-
     __refreshRoleLocationCount = 0
 
-    def __init__(self, target: str):
+    def __init__(self, target: str, options):
         self.target = target
         self.point: Screen.Point | None = None
         self.prevPoint: Screen.Point | None = None
+        self.__offset = options["offset"]
+        self.__skillList = options["skillList"]
+        self.__ticket = options["ticket"]
+        self.__buffList = options["buffList"]
+        self.speed = options["speed"]
+        self.firstRoom = options["firstRoom"]
 
     def setup(self):
         ScreenStream.register(self.setRoleLocation)
@@ -134,7 +110,7 @@ class Role:
             self.move(direction, 0.3)
             count += 1
             self.__refreshRoleLocationCount += 1
-            print(f"角色向{direction}移动{count}次")
+            # print(f"角色向{direction}移动{count}次")
             if count % microCycleCount == 0:
                 break
 
@@ -216,7 +192,7 @@ class Role:
             else:
                 Controller.press("Left", 0.01)
 
-            if self.__skillAttack() == 0:
+            if self.skillAttack() == 0:
                 self.__defaultAttack()
 
     def pickUp(self, dropList: list[Screen.Point]):
@@ -225,8 +201,7 @@ class Role:
         if not point:
             return
 
-        print("掉落位置", point)
-        self.__move(point, {"x": 10, "y": 10}, 0.2)
+        self.__move(point, {"x": 10, "y": 10}, self.speed)
 
     def checkLock(self) -> bool:
         if not self.point:
@@ -248,7 +223,7 @@ class Role:
             Controller.press("X", 0.1)
 
     # 技能攻击
-    def __skillAttack(self) -> int:
+    def skillAttack(self) -> int:
         count = 0
 
         for skill in self.__skillList:
@@ -256,7 +231,7 @@ class Role:
                 skill["dispatch"] = time.time()
                 Controller.press(skill["key"], skill["duration"])
                 count += 1
-                if count == randint(1, 2):
+                if count == 1:
                     break
 
         return count
@@ -265,24 +240,20 @@ class Role:
         Controller.press(self.__ticket["key"], self.__ticket["duration"])
 
     def buff(self):
-        # 旅人
-        Controller.press("Up Space")
-
-        # 奶妈
-        # Controller.press("Right Space")
-        # Controller.press("Up Space")
-        # Controller.press("Down Space")
+        for buff in self.__buffList:
+            Controller.press(buff, 1)
 
 
 if __name__ == "__main__":
+    pass
     # 初始化
-    time.sleep(3)
-    Controller.setup()
-    role = Role("images/roles/3.png")
+    # time.sleep(3)
+    # Controller.setup()
+    # role = Role("images/roles/3.png")
     # role.refreshRoleLocation()
     # role.refreshRoleLocation()
-    ScreenStream.listen()
-    ScreenStream.stop()
-    Controller.close()
+    # ScreenStream.listen()
+    # ScreenStream.stop()
+    # Controller.close()
     # role.getRoleLocation()
     # role.move()

@@ -11,8 +11,8 @@ class Room:
     __DROP_BASE_PATH = "images/drops/"
     __MONSTER_BASE_PATH = "images/monsters/"
     __COUNTER_BASE_PATH = "images/counter/"
-    __DOOR = "images/dungeons/door2.png"
-    __RELEASE = "images/dungeons/empty.png"
+    DOOR = "images/dungeons/door2.png"
+    RELEASE = "images/dungeons/empty.png"
 
     def __init__(
         self,
@@ -21,13 +21,13 @@ class Room:
         col: int,
         nextRoomDirection: Direction,
     ):
-        self.__role = role
+        self.role = role
         self.__row = row
         self.__col = col
-        self.__nextRoomDirection: Direction = nextRoomDirection
-
+        self.nextRoomDirection: Direction = nextRoomDirection
+        self.startTime = time.time()
         # 初始化房间状态
-        self.__released = False
+        self.released = False
         self.__matchDoorCount = 0
         self.__roleLocked = False
         # 卡住的假象
@@ -61,7 +61,7 @@ class Room:
         self.__initCounterList()
 
         # 监听房间是否可以同行
-        ScreenStream.register(self.__matchRoomRelease)
+        ScreenStream.register(self.matchRoomRelease)
 
     def __initMonsterList(self):
         self.__monsterList = list(
@@ -88,28 +88,29 @@ class Room:
         )
 
     # 检查房间是否已可以同行，即怪物已全部清除
-    def __matchRoomRelease(self):
-        point = Screen.getFirstPoint(ScreenStream.match(self.__RELEASE))
-        self.__released = point is not None
+    def matchRoomRelease(self):
+        point = Screen.getFirstPoint(ScreenStream.match(self.RELEASE))
+        self.released = point is not None
 
         if not point:
-            point = Screen.getFirstPoint(ScreenStream.match(self.__DOOR))
-            self.__released = point is not None
+            point = Screen.getFirstPoint(ScreenStream.match(self.DOOR))
+            self.released = point is not None
 
-        if self.__released:
-            ScreenStream.unregister(self.__matchMonsterList)
+        if self.released:
+            ScreenStream.unregister(self.__moveVerticalCenter)
+            ScreenStream.unregister(self.matchMonsterList)
             ScreenStream.register(self.__matchCounterList)
             if not self.__noDropList:
-                ScreenStream.register(self.__matchDropList)
+                ScreenStream.register(self.matchDropList)
         else:
-            ScreenStream.unregister(self.__matchDropList)
+            ScreenStream.unregister(self.matchDropList)
             ScreenStream.unregister(self.__matchNextRoomDoor)
-            ScreenStream.register(self.__matchMonsterList)
+            ScreenStream.register(self.__moveVerticalCenter)
 
     def __refreshRolePosition(self):
-        self.__role.refreshRoleLocation()
+        self.role.refreshRoleLocation()
 
-    def __matchMonsterList(self):
+    def matchMonsterList(self):
         self.__monsterPointList = []
         self.__monsterThreadList = []
 
@@ -122,7 +123,7 @@ class Room:
             thread.join()
 
         if len(self.__monsterPointList) > 0:
-            self.__role.attack(self.__monsterPointList, {"x": 800, "y": 120})
+            self.role.attack(self.__monsterPointList, {"x": 800, "y": 120})
         else:
             self.__refreshRolePosition()
 
@@ -137,7 +138,7 @@ class Room:
         point = (point[0], point[1] + 100)
         self.__monsterPointList.append(point)
 
-    def __matchDropList(self):
+    def matchDropList(self):
         self.__dropThreadList = []
         self.__dropPointList = []
 
@@ -150,10 +151,10 @@ class Room:
             thread.join()
 
         if len(self.__dropPointList) > 0:
-            self.__role.pickUp(self.__dropPointList)
+            self.role.pickUp(self.__dropPointList)
         else:
             self.__noDropList = True
-            ScreenStream.unregister(self.__matchDropList)
+            ScreenStream.unregister(self.matchDropList)
             ScreenStream.register(self.__matchNextRoomDoor)
 
     def __matchDrop(self, target: str):
@@ -180,7 +181,7 @@ class Room:
         if len(self.__counterPointList) > 0:
             # 有计数器
             self.__hasCounter = True
-            ScreenStream.unregister(self.__matchDropList)
+            ScreenStream.unregister(self.matchDropList)
             ScreenStream.unregister(self.__matchNextRoomDoor)
 
     def __matchCounter(self, target: str):
@@ -192,29 +193,42 @@ class Room:
         point = (point[0] + 15, point[1] + 15)
         self.__counterPointList.append(point)
 
+    def __moveVerticalCenter(self):
+        roleX, roleY = self.role.getPoint()
+        vMedium = 687
+
+        if abs(roleY - vMedium) > 80 and self.__matchDoorCount == 0:
+            direction = roleY > vMedium and "Up" or "Down"
+            self.role.move(direction, self.role.speed)
+        else:
+            ScreenStream.unregister(self.__moveVerticalCenter)
+            self.role.move("Right", 0.01)
+            self.role.skillAttack()
+            ScreenStream.register(self.matchMonsterList)
+
     def __matchNextRoomDoor(self):
         if self.__hasCounter:
             return
 
-        if self.__nextRoomDirection == "Right" or self.__nextRoomDirection == "Left":
+        if self.nextRoomDirection == "Right" or self.nextRoomDirection == "Left":
             self.__matchHorizontalDoor()
 
-        if self.__nextRoomDirection == "Up" or self.__nextRoomDirection == "Down":
+        if self.nextRoomDirection == "Up" or self.nextRoomDirection == "Down":
             self.__matchVerticalDoor()
 
     def __matchHorizontalDoor(self):
-        roleX, roleY = self.__role.getPoint()
+        roleX, roleY = self.role.getPoint()
         vMedium = 687
 
         if abs(roleY - vMedium) > 50 and self.__matchDoorCount == 0:
             direction = roleY > vMedium and "Up" or "Down"
-            self.__role.move(direction, 0.1)
+            self.role.move(direction, 0.1)
         else:
             if self.__mainDirectionNotGo:
                 print("第一次在主方向移动")
                 self.__mainDirectionNotGo = False
-                self.__role.move(self.__nextRoomDirection, 1.5)
-            elif self.__role.checkLock():
+                self.role.move(self.nextRoomDirection, 1.5)
+            elif self.role.checkLock():
                 print("角色卡住")
                 # 检测卡住的竖直方向
                 self.__roleLocked = True
@@ -222,47 +236,47 @@ class Room:
                 direction = direction == "Up" and "Down" or "Up"
                 self.__matchDoorCount += 1
                 self.__matchDoorSecondaryDirection = direction
-                self.__role.move(f"{direction} {self.__nextRoomDirection}", 1.5)  # type: ignore
+                self.role.move(f"{direction} {self.nextRoomDirection}", 1.5)  # type: ignore
             elif self.__roleLocked:
                 print("角色在主方向卡住")
                 direction = self.__matchDoorSecondaryDirection
                 self.__matchDoorCount += 1
-                self.__role.move(f"{direction} {self.__nextRoomDirection}", 1.5)  # type: ignore
+                self.role.move(f"{direction} {self.nextRoomDirection}", 1.5)  # type: ignore
             else:
                 print("主方向没有卡住")
-                self.__role.move(self.__nextRoomDirection, 1.5)
+                self.role.move(self.nextRoomDirection, 1.5)
 
     def __matchVerticalDoor(self):
-        roleX, roleY = self.__role.getPoint()
+        roleX, roleY = self.role.getPoint()
         hMedium = 600
 
         if abs(roleX - hMedium) > 50 and self.__matchDoorCount == 0:
             direction = roleX > hMedium and "Left" or "Right"
-            self.__role.move(direction, 0.1)
+            self.role.move(direction, 0.1)
         else:
             if self.__mainDirectionNotGo:
                 self.__mainDirectionNotGo = False
-                self.__role.move(self.__nextRoomDirection, 1.5)
-            elif self.__role.checkLock():
+                self.role.move(self.nextRoomDirection, 1.5)
+            elif self.role.checkLock():
                 print("角色卡住")
                 self.__roleLocked = True
-                direction = self.__matchDoorSecondaryDirection or "Right"
+                direction = self.__matchDoorSecondaryDirection or "Left"
                 direction = direction == "Right" and "Left" or "Right"
                 self.__matchDoorCount += 1
                 self.__matchDoorSecondaryDirection = direction
-                self.__role.move(f"{direction} {self.__nextRoomDirection}", 1.5)  # type: ignore
+                self.role.move(f"{direction} {self.nextRoomDirection}", 1.5)  # type: ignore
             elif self.__roleLocked:
                 print("角色在主方向卡住")
                 direction = self.__matchDoorSecondaryDirection
                 self.__matchDoorCount += 1
-                self.__role.move(f"{direction} {self.__nextRoomDirection}", 1.5)  # type: ignore
+                self.role.move(f"{direction} {self.nextRoomDirection}", 1.5)  # type: ignore
             else:
-                self.__role.move(self.__nextRoomDirection, 1.5)
+                self.role.move(self.nextRoomDirection, 1.5)
 
     def __unregisterMatcher(self):
-        ScreenStream.unregister(self.__matchRoomRelease)
-        ScreenStream.unregister(self.__matchMonsterList)
-        ScreenStream.unregister(self.__matchDropList)
+        ScreenStream.unregister(self.matchRoomRelease)
+        ScreenStream.unregister(self.matchMonsterList)
+        ScreenStream.unregister(self.matchDropList)
         ScreenStream.unregister(self.__matchNextRoomDoor)
 
     def destroy(self):
@@ -273,10 +287,11 @@ class Room:
 
 
 if __name__ == "__main__":
-    time.sleep(2)
-    Controller.setup()
-    role = Role("images/roles/3.png")
-    room = Room(role, 3, 0, "Right")
-    ScreenStream.listen()
-    Controller.release()
-    Controller.close()
+    pass
+    # time.sleep(2)
+    # Controller.setup()
+    # role = Role("images/roles/3.png")
+    # room = Room(role, 3, 0, "Right")
+    # ScreenStream.listen()
+    # Controller.release()
+    # Controller.close()

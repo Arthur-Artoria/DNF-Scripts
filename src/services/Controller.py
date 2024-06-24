@@ -13,7 +13,9 @@ __mouse: ch9329Comm.mouse.DataComm
 __keyboard: ch9329Comm.keyboard.DataComm
 
 
-def setup():
+def setup(sleep: bool = True):
+    if sleep:
+        time.sleep(3)
     serial.ser = serial.Serial("COM3", 115200)  # type: ignore # 开启串口
     __initMouse()
     __initKeyboard()
@@ -62,12 +64,20 @@ def click(locations: tuple[NDArray[np.intp], ...], offset: Offset | None = None)
         if "y" in offset:
             offsetY = offset["y"]
 
-    for pt in zip(*locations[::-1]):
-        x, y = int(pt[0]), int(pt[1])
-        __mouse.send_data_absolute(x + offsetX, y + offsetY)
-        __mouse.click()
-        time.sleep(0.5)
-        break
+    point = Screen.getFirstPoint(locations)
+
+    if point is None:
+        return
+
+    x, y = point
+    __mouse.send_data_absolute(x + offsetX, y + offsetY)
+    __mouse.click()
+    time.sleep(0.5)
+
+
+def mouseMove(x: int, y: int):
+    __mouse.send_data_absolute(x, y)
+    time.sleep(1)
 
 
 def clickImg(imgPath: str, offset: Offset | None = None):
@@ -76,8 +86,7 @@ def clickImg(imgPath: str, offset: Offset | None = None):
 
 
 if __name__ == "__main__":
-    time.sleep(0.5)
-    setup()
+    setup(False)
     press("Up")
     close()
 #

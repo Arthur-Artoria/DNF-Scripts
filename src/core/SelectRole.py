@@ -2,12 +2,6 @@ import os
 import sys
 import time
 
-currentPath = os.path.dirname(os.path.realpath(__file__))
-parentPath = os.path.dirname(currentPath)
-
-sys.path.append(parentPath)
-sys.path.append("src/services/")
-
 from services import Controller
 
 __BASE_PATH = "images/roles"
@@ -26,20 +20,29 @@ def __startGame():
     Controller.clickImg("images/start.png")
 
 
-def selectRole():
+def toSelectRole():
+    Controller.press("Esc")
+    Controller.clickImg("images/selectRole.png")
+    time.sleep(2)
+
+
+def selectRole(index=__roleIndex) -> bool | int:
     global __roleIndex
     if not __roleList:
         __getRoleList()
 
-    role = __roleList[__roleIndex]
+    if index > len(__roleList):
+        return False
+
+    role = __roleList[index]
     Controller.clickImg(role)
-    __roleIndex += 1
-    return role
+    __roleIndex = index + 1
+    Controller.press("Space")
+    return index
 
 
 if __name__ == "__main__":
     time.sleep(3)
     Controller.setup()
     selectRole()
-    Controller.press("SP")
     Controller.close()
