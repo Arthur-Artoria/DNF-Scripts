@@ -1,4 +1,5 @@
 from ast import While
+from random import randint
 from time import sleep
 import time
 from typing import Literal
@@ -13,10 +14,10 @@ type Direction = Literal[
 class Role:
     # TODO: 临时方案，后续需要优化
     # 旅人
-    # __offset: tuple = (20, 180)
+    __offset: tuple = (20, 180)
 
     # 奶妈
-    __offset: tuple = (20, 200)
+    # __offset: tuple = (20, 200)
 
     __refreshRoleLocationDirectionList: list[Direction] = [
         "Down Right",
@@ -27,25 +28,25 @@ class Role:
 
     __skillList = [
         # 旅人
-        # {"key": "A", "CD": 5.8, "dispatch": 0, "duration": 0.5},
-        # {"key": "Q", "CD": 10, "dispatch": 0, "duration": 0.5},
-        # {"key": "S", "CD": 11.2, "dispatch": 0, "duration": 0.5},
-        # {"key": "W", "CD": 12.4, "dispatch": 0, "duration": 0.5},
-        # {"key": "D", "CD": 27.7, "dispatch": 0, "duration": 0.5},
-        # {"key": "R", "CD": 37.2, "dispatch": 0, "duration": 0.5},
+        {"key": "Q", "CD": 10, "dispatch": 0, "duration": 0.5},
+        {"key": "A", "CD": 5.8, "dispatch": 0, "duration": 0.5},
+        {"key": "S", "CD": 11.2, "dispatch": 0, "duration": 0.5},
+        {"key": "W", "CD": 12.4, "dispatch": 0, "duration": 0.5},
+        {"key": "D", "CD": 27.7, "dispatch": 0, "duration": 0.5},
+        {"key": "R", "CD": 37.2, "dispatch": 0, "duration": 0.5},
         # 奶妈
         # {"key": "F", "CD": 12, "dispatch": 0, "duration": 0.5},
-        {"key": "D", "CD": 12, "dispatch": 0, "duration": 2},
-        {"key": "A", "CD": 9, "dispatch": 0, "duration": 0.5},
-        {"key": "E", "CD": 6, "dispatch": 0, "duration": 0.5},
-        {"key": "Q", "CD": 12, "dispatch": 0, "duration": 0.5},
-        {"key": "S", "CD": 5.4, "dispatch": 0, "duration": 0.5},
-        {"key": "W", "CD": 15, "dispatch": 0, "duration": 0.5},
-        {"key": "R", "CD": 13.5, "dispatch": 0, "duration": 0.5},
+        # {"key": "D", "CD": 12, "dispatch": 0, "duration": 2},
+        # {"key": "A", "CD": 9, "dispatch": 0, "duration": 0.5},
+        # {"key": "E", "CD": 6, "dispatch": 0, "duration": 0.5},
+        # {"key": "Q", "CD": 12, "dispatch": 0, "duration": 0.5},
+        # {"key": "S", "CD": 5.4, "dispatch": 0, "duration": 0.5},
+        # {"key": "W", "CD": 15, "dispatch": 0, "duration": 0.5},
+        # {"key": "R", "CD": 13.5, "dispatch": 0, "duration": 0.5},
     ]
 
-    # __ticket = {"key": "Up Down Space", "CD": 275, "dispatch": 0, "duration": 5}
-    __ticket = {"key": "V", "CD": 275, "dispatch": 0, "duration": 6}
+    __ticket = {"key": "Up Down Space", "CD": 275, "dispatch": 0, "duration": 5}
+    # __ticket = {"key": "V", "CD": 275, "dispatch": 0, "duration": 6}
 
     __refreshRoleLocationCount = 0
 
@@ -54,6 +55,7 @@ class Role:
         self.point: Screen.Point | None = None
         self.prevPoint: Screen.Point | None = None
 
+    def setup(self):
         ScreenStream.register(self.setRoleLocation)
 
     def getPoint(self) -> Screen.Point:
@@ -80,10 +82,12 @@ class Role:
         x, y = point
         self.prevPoint = self.point
         self.point = (x + offsetX, y + offsetY)
-        print("上一次角色位置：", self.prevPoint, "当前角色位置：", self.point)
+        # print("上一次角色位置：", self.prevPoint, "当前角色位置：", self.point)
 
     def setRoleLocation(self):
-        self.__updateRoleLocation(ScreenStream.match(self.target))
+        locations = ScreenStream.match(self.target)
+        # print("匹配角色位置", locations)
+        self.__updateRoleLocation(locations)
 
     def syncSetRoleLocation(self):
         time.sleep(0.5)
@@ -162,9 +166,9 @@ class Role:
 
         if hDirection or vDirection:
             direction = f"{vDirection} {hDirection}".strip()
-            print("move 方向", direction)
             self.move(direction, seconds)  # type: ignore
-        else:
+
+        if not hDirection or not vDirection:
             return True
 
     def __getDistance(self, point: Screen.Point):
@@ -203,7 +207,7 @@ class Role:
 
         print("怪物位置", point)
 
-        if self.__move(point, offset):
+        if self.__move(point, offset, 0.5):
             monsterX = point[0]
             roleX = rolePoint[0]
 
@@ -252,7 +256,8 @@ class Role:
                 skill["dispatch"] = time.time()
                 Controller.press(skill["key"], skill["duration"])
                 count += 1
-                break
+                if count == randint(1, 2):
+                    break
 
         return count
 
@@ -261,12 +266,12 @@ class Role:
 
     def buff(self):
         # 旅人
-        # Controller.press("Up Space")
+        Controller.press("Up Space")
 
         # 奶妈
-        Controller.press("Right Space")
-        Controller.press("Up Space")
-        Controller.press("Down Space")
+        # Controller.press("Right Space")
+        # Controller.press("Up Space")
+        # Controller.press("Down Space")
 
 
 if __name__ == "__main__":

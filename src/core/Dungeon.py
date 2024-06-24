@@ -36,7 +36,7 @@ class Dungeon:
         self.offset = offset
         self.direction = direction
         self.__room: Room | None = None
-        self.role = Role("images/roles/3.png")
+        self.role = Role("images/roles/5.png")
 
         ScreenStream.register(self.__matchDungeonEntered)
 
@@ -68,6 +68,7 @@ class Dungeon:
         started = ScreenStream.exist(self.__ROOM_TARGET)
         if started:
             self.role.buff()
+            self.role.setup()
             ScreenStream.register(self.__matchRoom)
             ScreenStream.unregister(self.__matchDungeonEntered)
 
@@ -79,13 +80,16 @@ class Dungeon:
 
     def __finish(self):
         gift = Screen.getFirstPoint(ScreenStream.match("images/dungeons/gift.png"))
-
+        count = 0
         if gift:
             print("战斗结束")
-            time.sleep(1)
-            Controller.press("Esc", 2)
-            Controller.press("Esc", 2)
-            Controller.press("Delete", 3)
+            time.sleep(0.5)
+            Controller.press("Esc", 1)
+            Controller.press("Esc", 1)
+            Controller.press("Delete", 1)
+            while count < 3:
+                count += 1
+                Controller.press("X")
             Controller.press("ShiftRight")
             self.__restart()
 
@@ -135,6 +139,7 @@ class Dungeon:
         self.__createRoom(row, col, crevice)
 
     def __restart(self):
+        self.role.resetRefreshRoleLocationCount()
         ScreenStream.register(self.__matchDungeonEntered)
         ScreenStream.unregister(self.__matchBoss)
         ScreenStream.unregister(self.__finish)
