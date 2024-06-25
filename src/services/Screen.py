@@ -8,7 +8,6 @@ import mss.tools
 import numpy as np
 from numpy._typing import NDArray
 import cv2 as cv
-import pyautogui
 from constants import Monitor
 
 type Point = tuple[int, int]
@@ -23,9 +22,9 @@ def updateMonitor(monitor: Monitor.Monitor):
     __monitor = monitor
 
 
-def __getScreen():
+def __getScreen(color: int = cv.COLOR_BGR2GRAY):
     with mss.mss() as sct:
-        return cv.cvtColor(np.array(sct.grab(__monitor)), cv.COLOR_BGR2GRAY)  # type: ignore
+        return cv.cvtColor(np.array(sct.grab(__monitor)), color)  # type: ignore
 
 
 def __matchTemplate(shotGray: cv.typing.MatLike, target: cv.typing.MatLike):
@@ -34,15 +33,36 @@ def __matchTemplate(shotGray: cv.typing.MatLike, target: cv.typing.MatLike):
     return locations
 
 
-def match(imgPath: str, shotGray=None, area: Rect | None = None):
+def match(
+    imgPath: str,
+    shotGray=None,
+    area: Rect | None = None,
+    color: int = cv.COLOR_BGR2GRAY,
+):
     if shotGray is None:
-        shotGray = __getScreen()
+        shotGray = __getScreen(color)
 
     if area is not None:
         shotGray = shotGray[area[1] : area[3], area[0] : area[2]]
 
-    target = cv.cvtColor(cv.imread(imgPath), cv.COLOR_BGR2GRAY)
+    target = cv.cvtColor(cv.imread(imgPath), color)
     return __matchTemplate(shotGray, target)
+
+
+def matchListAny(
+    imgPaths: list[str],
+    shotGray=None,
+    area: Rect | None = None,
+    color: int = cv.COLOR_BGR2GRAY,
+):
+    if shotGray is None:
+        shotGray = __getScreen(color)
+
+    for imgPath in imgPaths:
+        locations = match(imgPath, shotGray, area, color)
+        point = getFirstPoint(locations, area)
+        if point is not None:
+            return (locations, point)
 
 
 def getFirstPoint(locations: Locations, area: Rect | None = None) -> None | Point:
@@ -53,5 +73,15 @@ def getFirstPoint(locations: Locations, area: Rect | None = None) -> None | Poin
         return x, y
 
 
-def exist(target: str, area: Rect | None = None) -> bool:
-    return getFirstPoint(match(target, area), area) is not None
+def exist(
+    target: str,
+    area: Rect | None = None,
+    color: int = cv.COLOR_BGR2GRAY,
+) -> bool:
+    return (
+        getFirstPoint(
+            match(target, None, area, color),
+            area,
+        )
+        is not None
+    )

@@ -5,7 +5,7 @@ class Scene:
     def __init__(self, name: str, target: str):
         self.name = name
         self.target = target
-        ScreenStream.register(self.match)
+        ScreenStream.addListener(self.match)
 
     def match(self):
         locations = ScreenStream.match(self.target)

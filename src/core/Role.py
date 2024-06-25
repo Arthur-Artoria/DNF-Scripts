@@ -32,7 +32,7 @@ class Role:
         self.firstRoom = options["firstRoom"]
 
     def setup(self):
-        ScreenStream.register(self.setRoleLocation)
+        ScreenStream.addListener(self.setRoleLocation)
 
     def getPoint(self) -> Screen.Point:
         if not self.point:
@@ -174,8 +174,6 @@ class Role:
         monsterList: list[Screen.Point],
         offset: Controller.Offset = {"x": 0, "y": 0},
     ):
-        rolePoint = self.getPoint()
-
         point = self.__getNearestPoint(monsterList)
 
         if not point:
@@ -184,6 +182,9 @@ class Role:
         print("怪物位置", point)
 
         if self.__move(point, offset, 0.5):
+            self.syncSetRoleLocation()
+            rolePoint = self.getPoint()
+
             monsterX = point[0]
             roleX = rolePoint[0]
 

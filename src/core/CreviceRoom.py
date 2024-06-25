@@ -1,72 +1,42 @@
-from core.Room import Room
+from typing import Callable
+from src.core.MonsterRoom import MonsterRoom
 from services import Screen, ScreenStream
+from src.core.Role import Direction, Role
 
 
-class CreviceRoom(Room):
-
-    __CREVICE_TARGET = "images/dungeons/crevice.png"
+class CreviceRoom(MonsterRoom):
+    def __init__(
+        self, id: str, role: Role, nextRoomDirection: Direction, onLeaved: Callable
+    ):
+        super().__init__(id, role, nextRoomDirection)
+        self.onLeaved = onLeaved
 
     # 检查房间是否已可以同行，即怪物已全部清除
     def matchRoomRelease(self):
         point = Screen.getFirstPoint(ScreenStream.match(self.RELEASE))
-        self.__released = point is not None
+        self.released = point is not None
 
         if not point:
             point = Screen.getFirstPoint(ScreenStream.match(self.DOOR))
-            self.__released = point is not None
+            self.released = point is not None
 
-        if self.__released:
-            ScreenStream.unregister(self.matchMonsterList)
-        else:
-            ScreenStream.register(self.matchMonsterList)
-            ScreenStream.unregister(self.matchDropList)
-            ScreenStream.unregister(self.matchCrevice)
-
-    def __unregisterMatcher(self):
-        super().__unregisterMatcher()
-        ScreenStream.unregister(self.matchCrevice)
-
-    def matchCrevice(self):
-        # print("匹配裂缝")
-        point = Screen.getFirstPoint(ScreenStream.match(self.__CREVICE_TARGET))
-
-        if not point:
-            self.__moveDown()
+        if not self.released:
+            ScreenStream.addListener(self.matchMonsterList)
             return
 
-        cX, cY = point
+        return ScreenStream.addListener(self.adjustRoleLocation)
+
+    def adjustRoleLocation(self):
         roleX, roleY = self.role.getPoint()
 
-        # 在裂缝上面
-        if roleY < cY:
-            # 与裂缝水平距离很近
-            if abs(cX - roleX) < 100:
-                if roleX < cX:
-                    # 在裂缝左边，向左下移动，远离裂缝
-                    self.role.move("Left", 0.2)
-                    self.__moveDown()
-                else:
-                    # 在裂缝右边，向右下移动，远离裂缝
-                    self.role.move("Right", 0.2)
-                    self.__moveDown()
-            else:
-                # 与裂缝水平距离较远，直接向下移动
-                self.__moveDown()
-        else:
-            # 在裂缝下面，继续向下移动
-            self.__moveDown()
-
-    def __moveDown(self):
-        roleX, roleY = self.role.getPoint()
-
-        while abs(roleY - 800) > 20:
+        if abs(roleY - 800) > 20:
             direction = roleY < 800 and "Down" or "Up"
             self.role.move(direction, 0.1)
-            self.role.syncSetRoleLocation()
-            roleY = self.role.getPoint()[1]
+        else:
+            self.moveToNextRoom()
+            return True
 
-        self.__moveToNextDoor()
-
-    def __moveToNextDoor(self):
+    def moveToNextRoom(self):
         self.role.move("Right", 6)
         self.role.move("Up", 2)
+        self.onLeaved()

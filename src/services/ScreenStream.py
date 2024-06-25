@@ -8,13 +8,13 @@ import cv2 as cv
 from services import Controller, Screen
 from constants import Monitor
 
-type Matcher = Callable[[], bool | None]
+type Listener = Callable[[], bool | None]
 
 __listenFlag = True
 __shot: np.ndarray | None = None
 __shotGray: np.ndarray | None = None
 __monitor = Monitor.DNF_MONITOR
-__matcherList: list[Matcher] = []
+__listenerList: list[Listener] = []
 
 
 def listen():
@@ -28,7 +28,7 @@ def listen():
         while __listenFlag:
             __shot = np.array(sct.grab(__monitor))  # type: ignore
             __shotGray = cv.cvtColor(__shot, cv.COLOR_BGR2GRAY)  # type: ignore
-            __callMatcherList()
+            __dispatchListenerList()
 
             # cv.imshow("DNF", __shot)  # type: ignore
 
@@ -42,12 +42,11 @@ def __close() -> bool:
     return key == ord("q")
 
 
-def __callMatcherList():
-    global __matcherList
-
-    for matcher in __matcherList:
+def __dispatchListenerList():
+    global __listenerList
+    for matcher in __listenerList:
         if matcher():
-            __matcherList.remove(matcher)
+            __listenerList.remove(matcher)
 
 
 def stop():
@@ -56,38 +55,47 @@ def stop():
     __listenFlag = False
 
 
-def register(fn: Matcher):
-    if fn not in __matcherList:
-        # print("注册匹配器: " + str(fn))
-        __matcherList.append(fn)
+def addListener(fn: Listener) -> bool:
+    if fn not in __listenerList:
+        __listenerList.append(fn)
+
+    return True
 
 
-def unregister(fn: Matcher):
-    if fn in __matcherList:
-        # print("注销匹配器: " + str(fn))
-        __matcherList.remove(fn)
+def removeListener(fn: Listener):
+    if fn in __listenerList:
+        __listenerList.remove(fn)
 
 
 def clear():
-    global __matcherList
-    __matcherList = []
+    global __listenerList
+    __listenerList = []
 
 
-def match(target: str, area: Screen.Rect | None = None):
+def match(
+    target: str,
+    area: Screen.Rect | None = None,
+    color: int = cv.COLOR_BGR2GRAY,
+):
     if __shotGray is None:
         # TODO: 抛出异常
         print("[ScreenStream] 截图未初始化")
         return ()
-    return Screen.match(target, __shotGray, area)
+    return Screen.match(target, __shotGray, area, color)
 
 
-def exist(target: str, area: Screen.Rect | None = None) -> bool:
+def exist(
+    target: str,
+    area: Screen.Rect | None = None,
+    color: int = cv.COLOR_BGR2GRAY,
+) -> bool:
     if __shotGray is None:
         # TODO: 抛出异常
         print("[ScreenStream] 截图未初始化")
         return False
     return (
-        Screen.getFirstPoint(Screen.match(target, __shotGray, area), area) is not None
+        Screen.getFirstPoint(Screen.match(target, __shotGray, area, color), area)
+        is not None
     )
 
 
@@ -97,58 +105,5 @@ def drawRect(point: Screen.Point, color: tuple[int, int, int]):
     cv.rectangle(__shot, point, (point[0] + 20, point[1] + 20), color, 2)
 
 
-if __name__ == "__main__":
-    Controller.setup()
-    start = time.time()
-
-    def matcher():
-        if time.time() - start > 5:
-            print("超时")
-            # unregister(matcher)
-            # register(__backCity)
-            __backCity()
-
-    def __backCity():
-        print("返回城镇")
-
-        Controller.press("Esc")
-
-        sleep(1)
-
-        Controller.clickImg("images/city.png")
-
-        sleep(1)
-
-        Controller.clickImg("images/confirm.png")
-
-        # locations = match("images/city.png")
-        # point = Screen.getFirstPoint(locations)
-
-        # print("城镇坐标", point)
-
-        # if point:
-        #     Controller.click(locations)
-        #     sleep(1)
-        #     locations = Screen.match("images/cityConfirm.png")
-        #     point = Screen.getFirstPoint(locations)
-
-        #     print("确认返回城镇坐标", point)
-
-        #     if point:
-        #         print("确认返回城镇")
-        #         Controller.click(locations)
-        #         sleep(1)
-        #     else:
-        #         print("未找到确认返回城镇")
-        # else:
-        #     print("未找到城镇")
-
-    register(matcher)
-
-    listen()
-
-    stop()
-
-    # print(match("images/city.png"))
-
-    Controller.close()
+def matchListAny(targetList: list[str], area: Screen.Rect | None = None):
+    return Screen.matchListAny(targetList, __shotGray, area)

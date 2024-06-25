@@ -44,27 +44,38 @@ def close():
     serial.ser.close()  # type: ignore
 
 
-def press(key: str, seconds: float = 0.5):
+def press(key: str, seconds: float = 0.5, sleep: float = 0.5):
     data = "".join(map(lambda x: Keyboard.options[x]["key"], key.split(" ")))
     __keyboard.send_data(data)
     time.sleep(seconds)
     __keyboard.release()
-    time.sleep(0.5)
+    time.sleep(sleep)
 
 
 def release():
     __keyboard.release()
 
 
-def click(locations: tuple[NDArray[np.intp], ...], offset: Offset | None = None):
+def click(
+    locations: tuple[NDArray[np.intp], ...] | Screen.Point | None,
+    offset: Offset | None = None,
+):
+    if locations is None:
+        return
+
+    x, y = locations
+
+    if isinstance(x, np.ndarray) and isinstance(x, np.ndarray):
+        point = Screen.getFirstPoint(locations)  # type: ignore
+    else:
+        point: Screen.Point = locations  # type: ignore
+
     offsetX, offsetY = 0, 0
     if offset is not None:
         if "x" in offset:
             offsetX = offset["x"]
         if "y" in offset:
             offsetY = offset["y"]
-
-    point = Screen.getFirstPoint(locations)
 
     if point is None:
         return
