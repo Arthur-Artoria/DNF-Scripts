@@ -1,5 +1,5 @@
-from time import sleep
-from core import Sell
+from time import sleep, time
+from core import Sell, System
 from core.Dungeon import Dungeon
 from services import Controller, Screen, ScreenStream
 
@@ -14,8 +14,15 @@ class City:
         inCity = ScreenStream.exist("images/city.png")
 
         if inCity:
-            self.addListenerList()
+            self.time = self.time or time()
+
+            if time() - self.time > 120:
+                # 在城镇中超时
+                self.escape()
+            else:
+                self.addListenerList()
         else:
+            self.time = None
             self.removeListenerList()
 
     def addListenerList(self):
@@ -36,9 +43,6 @@ class City:
 
         Sell.openStore(storePoint)
 
-        if self.dungeon:
-            self.dungeon.into()
-
     def matchWeakness(self):
         locations = ScreenStream.match("images/weakness.png")
         point = Screen.getFirstPoint(locations)
@@ -51,12 +55,19 @@ class City:
         Controller.clickImg("images/weaknessConfirm.png")
         sleep(1)
 
-        if self.dungeon:
-            self.dungeon.moveToDungeonList()
-
     def dispatchRole(self):
         if not self.dungeon:
             return
 
+        System.closeSystemSetting()
+
         if self.dungeon.needSwitchRole:
             self.dungeon.backCelia()
+        else:
+            self.dungeon.into()
+
+    def escape(self):
+        ScreenStream.stop()
+        ScreenStream.addListener(self.matchCity)
+        System.closeSystemSetting()
+        ScreenStream.listen()

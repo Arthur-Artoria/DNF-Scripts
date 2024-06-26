@@ -64,16 +64,3 @@ class BossRoom(Room):
         ScreenStream.removeListener(self.matchBoss)
         ScreenStream.removeListener(self.matchReward)
         ScreenStream.removeListener(self.onPickUpEnd)
-
-
-if __name__ == "__main__":
-    Controller.setup()
-
-    role = Role("images/dungeons/roleTarget.png", Roles_local.roleList[0])
-
-    def onPickUpEnd():
-        print("pick up end")
-
-    bossRoom = BossRoom("boss", role, onPickUpEnd)
-    ScreenStream.listen()
-    Controller.close()

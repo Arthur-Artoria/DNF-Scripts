@@ -10,6 +10,7 @@ from core.BossRoom import BossRoom
 from core.MonsterRoom import MonsterRoom
 from core.FirstRoom import FirstRoom
 from core.Role import Direction, Role
+from core.System import closeSystemSetting
 from services import Controller, Screen, ScreenStream
 from core import Roles_local as Roles
 from core.Room import Room
@@ -47,8 +48,6 @@ class Dungeon:
         self.role = Role(self.__ROLE_TARGET, roleOption)
         self.finishCount = 0
         self.needSwitchRole = False
-        ScreenStream.addListener(self.matchStatus)
-        ScreenStream.addListener(self.matchDungeonCard)
 
     def into(self):
         self.__openMap()
@@ -104,6 +103,8 @@ class Dungeon:
 
         self.role.buff()
         self.role.setup()
+
+        ScreenStream.addListener(self.matchStatus)
         return ScreenStream.addListener(self.matchRoom)
 
     def matchStatus(self):
@@ -204,11 +205,13 @@ class Dungeon:
 
     def switchRole(self):
         self.needSwitchRole = True
+        self.removeListenerList()
+        self.destroyRoom()
         self.backCity()
 
     def backCelia(self):
+        # 此处通过调用关闭系统菜单，来达到关闭广告弹窗的效果
         Sell.backCelia()
-        Sell.openStore()
         SelectRole.toSelectRole()
         ScreenStream.stop()
 
@@ -216,6 +219,12 @@ class Dungeon:
         if self.room:
             self.room.destroy()
             self.room = None
+
+    def removeListenerList(self):
+        ScreenStream.removeListener(self.matchStatus)
+        ScreenStream.removeListener(self.matchDungeonCard)
+        ScreenStream.removeListener(self.matchDungeonEntered)
+        ScreenStream.removeListener(self.matchRoom)
 
 
 if __name__ == "__main__":
