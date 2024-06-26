@@ -85,3 +85,12 @@ def exist(
         )
         is not None
     )
+
+
+if __name__ == "__main__":
+
+    def matcher():
+        point = getFirstPoint(match("images/dungeons/roleEnd.png"))
+        print(point)
+
+    matcher()

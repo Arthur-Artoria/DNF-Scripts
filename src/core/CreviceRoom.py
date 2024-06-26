@@ -1,7 +1,7 @@
 from typing import Callable
-from src.core.MonsterRoom import MonsterRoom
+from core.MonsterRoom import MonsterRoom
 from services import Screen, ScreenStream
-from src.core.Role import Direction, Role
+from core.Role import Direction, Role
 
 
 class CreviceRoom(MonsterRoom):

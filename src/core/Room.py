@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import time
 
-from src.core.Role import Role
+from core.Role import Role
 
 
 class Room:

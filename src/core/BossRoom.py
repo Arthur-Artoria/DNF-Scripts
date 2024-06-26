@@ -1,8 +1,8 @@
 from typing import Callable
-from src.core import Sell
-from src.core.Role import Role
-from src.core.Room import Room
-from src.services import Controller, ScreenStream
+from core import Roles_local, Sell
+from core.Role import Role
+from core.Room import Room
+from services import Controller, ScreenStream
 
 
 class BossRoom(Room):
@@ -30,13 +30,18 @@ class BossRoom(Room):
         return ScreenStream.addListener(self.matchReward)
 
     def matchReward(self):
-        existStore = ScreenStream.exist("images/sell/sellTarget.png")
+        print("开始匹配奖励")
+        existReenter = ScreenStream.exist("images/dungeons/reenter.png")
 
-        if not existStore:
+        if not existReenter:
             return
+
+        print("匹配到奖励")
 
         self.handleStore()
         self.pickUpDrops()
+
+        self.role.move("Up", 1)
 
         return ScreenStream.addListener(self.onPickUpEnd)
 
@@ -55,6 +60,20 @@ class BossRoom(Room):
 
     def destroy(self):
         super().destroy()
+        print("Boss房间 销毁")
         ScreenStream.removeListener(self.matchBoss)
         ScreenStream.removeListener(self.matchReward)
         ScreenStream.removeListener(self.onPickUpEnd)
+
+
+if __name__ == "__main__":
+    Controller.setup()
+
+    role = Role("images/dungeons/roleTarget.png", Roles_local.roleList[0])
+
+    def onPickUpEnd():
+        print("pick up end")
+
+    bossRoom = BossRoom("boss", role, onPickUpEnd)
+    ScreenStream.listen()
+    Controller.close()

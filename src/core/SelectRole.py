@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+from typing import Literal
 
 from services import Controller
 
@@ -26,19 +27,19 @@ def toSelectRole():
     time.sleep(2)
 
 
-def selectRole(index=__roleIndex) -> bool | int:
+def selectRole(index=__roleIndex) -> int:
     global __roleIndex
     if not __roleList:
         __getRoleList()
 
     if index > len(__roleList):
-        return False
+        return -1
 
     role = __roleList[index]
     Controller.clickImg(role)
     __roleIndex = index + 1
     Controller.press("Space")
-    return index
+    return __roleIndex
 
 
 if __name__ == "__main__":

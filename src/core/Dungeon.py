@@ -2,15 +2,17 @@ import math
 from time import sleep
 import time
 from typing import Callable, Literal
+
+import cv2
 from core import SelectRole, Sell
 from core.CreviceRoom import CreviceRoom
-from src.core.BossRoom import BossRoom
-from src.core.MonsterRoom import MonsterRoom
+from core.BossRoom import BossRoom
+from core.MonsterRoom import MonsterRoom
 from core.FirstRoom import FirstRoom
 from core.Role import Direction, Role
 from services import Controller, Screen, ScreenStream
 from core import Roles_local as Roles
-from src.core.Room import Room
+from core.Room import Room
 
 
 class Dungeon:
@@ -44,6 +46,7 @@ class Dungeon:
         self.room: Room | None = None
         self.role = Role(self.__ROLE_TARGET, roleOption)
         self.finishCount = 0
+        self.needSwitchRole = False
         ScreenStream.addListener(self.matchStatus)
         ScreenStream.addListener(self.matchDungeonCard)
 
@@ -55,11 +58,13 @@ class Dungeon:
         # 打开工会
         Controller.press(";")
         # 点击传送
-        Controller.clickImg("images/transport.png")
+        Controller.clickImg("images/transport.png", {"x": 20, "y": 20})
         # 同意打开地图
-        Controller.press("Space")
+        Controller.press(
+            "Space",
+        )
         # 点击世界地图
-        Controller.clickImg("images/mapSelector.png")
+        Controller.clickImg("images/mapSelector.png", {"x": 10, "y": 10})
 
     def __transport(self):
         # 点击目标区域
@@ -68,6 +73,7 @@ class Dungeon:
         Controller.clickImg(self.target, self.offset)
         # 同意传送
         Controller.press("Space")
+        sleep(1)
         self.moveToDungeonList()
 
     def moveToDungeonList(self):
@@ -121,9 +127,8 @@ class Dungeon:
         if id in self.roomList:
             room = self.roomList[id]
             direction = room["nextRoomDirection"]
-            if "first" in room:
-                self.room = FirstRoom(id, self.role, direction)
-            elif crevice:
+
+            if crevice:
                 self.room = CreviceRoom(id, self.role, direction, self.createBossRoom)
             else:
                 self.room = MonsterRoom(id, self.role, direction)
@@ -132,7 +137,10 @@ class Dungeon:
 
     def createBossRoom(self):
         if self.room:
-            self.room.destroy()
+            if self.room.id == "Boss":
+                return
+            else:
+                self.room.destroy()
 
         self.finishCount += 1
         self.room = BossRoom(
@@ -166,6 +174,8 @@ class Dungeon:
     def reenterDungeon(self):
         self.destroyRoom()
         self.role.resetRefreshRoleLocationCount()
+        Controller.press("ShiftRight")
+        ScreenStream.removeListener(self.matchRoom)
         ScreenStream.addListener(self.matchDungeonEntered)
 
     def backCity(self):
@@ -181,24 +191,26 @@ class Dungeon:
 
         if Screen.exist("images/confirm.png"):
             Controller.press("Space")
-            # ScreenStream.addListener(self.__matchInCity)
 
     def matchRoleEnd(self):
-        isEnd = Screen.exist("images/dungeons/end.png")
-        if isEnd:
-            print("疲劳已用光", isEnd)
+        roleEnd = ScreenStream.exist("images/dungeons/roleEnd.png")
+
+        if roleEnd:
+            print("疲劳已用光", roleEnd)
             self.switchRole()
         else:
+            print("重新挑战")
             self.reenterDungeon()
 
     def switchRole(self):
+        self.needSwitchRole = True
         self.backCity()
-        # TODO：有待调整，扔需要持续检测
-        ScreenStream.clear()
-        time.sleep(2)
+
+    def backCelia(self):
         Sell.backCelia()
         Sell.openStore()
         SelectRole.toSelectRole()
+        ScreenStream.stop()
 
     def destroyRoom(self):
         if self.room:

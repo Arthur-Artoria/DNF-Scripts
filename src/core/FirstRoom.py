@@ -1,5 +1,5 @@
 from core.Role import Direction, Role
-from src.core.Room import Room
+from core.Room import Room
 
 
 class FirstRoom(Room):

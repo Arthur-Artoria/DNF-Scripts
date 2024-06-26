@@ -4,7 +4,7 @@ import threading
 import time
 from core.Role import Direction, Role
 from services import Screen, ScreenStream
-from src.core.Room import Room
+from core.Room import Room
 
 
 class MonsterRoom(Room):
@@ -32,6 +32,7 @@ class MonsterRoom(Room):
         self.__noDropList = False
         self.__mainDirectionNotGo = True
         self.__matchDoorSecondaryDirection: Direction | None = None
+        self.__firstMove = False
 
         # 声明怪物列表系列变量
         self.__monsterList: list[str] = []
@@ -100,8 +101,9 @@ class MonsterRoom(Room):
                 ScreenStream.addListener(self.matchDropList)
         else:
             ScreenStream.removeListener(self.matchDropList)
-            ScreenStream.removeListener(self.__matchNextRoomDoor)
-            ScreenStream.addListener(self.moveToVerticalCenter)
+            ScreenStream.removeListener(self.matchNextRoomDoor)
+            if not self.__firstMove:
+                ScreenStream.addListener(self.moveToVerticalCenter)
 
     def __refreshRolePosition(self):
         self.role.refreshRoleLocation()
@@ -150,7 +152,7 @@ class MonsterRoom(Room):
             self.role.pickUp(self.__dropPointList)
         else:
             self.__noDropList = True
-            return ScreenStream.addListener(self.__matchNextRoomDoor)
+            return ScreenStream.addListener(self.matchNextRoomDoor)
 
     def __matchDrop(self, target: str):
         point = Screen.getFirstPoint(ScreenStream.match(target))
@@ -177,7 +179,7 @@ class MonsterRoom(Room):
             # 有计数器
             self.__hasCounter = True
             ScreenStream.removeListener(self.matchDropList)
-            ScreenStream.removeListener(self.__matchNextRoomDoor)
+            ScreenStream.removeListener(self.matchNextRoomDoor)
 
     def __matchCounter(self, target: str):
         point = Screen.getFirstPoint(ScreenStream.match(target))
@@ -198,9 +200,10 @@ class MonsterRoom(Room):
         else:
             self.role.move("Right", 0.01)
             self.role.skillAttack()
+            self.__firstMove = True
             return ScreenStream.addListener(self.matchMonsterList)
 
-    def __matchNextRoomDoor(self):
+    def matchNextRoomDoor(self):
         if self.__hasCounter:
             return
 
@@ -271,7 +274,9 @@ class MonsterRoom(Room):
         ScreenStream.removeListener(self.matchRoomStatus)
         ScreenStream.removeListener(self.matchMonsterList)
         ScreenStream.removeListener(self.matchDropList)
-        ScreenStream.removeListener(self.__matchNextRoomDoor)
+        ScreenStream.removeListener(self.matchNextRoomDoor)
+        ScreenStream.removeListener(self.__matchCounterList)
+        ScreenStream.removeListener(self.moveToVerticalCenter)
 
     def destroy(self):
         self.unregisterMatcher()

@@ -1,5 +1,6 @@
 import time
 from services import Controller
+from services.Screen import Point
 
 
 def backCelia():
@@ -8,8 +9,10 @@ def backCelia():
     time.sleep(2)
 
 
-def openStore():
-    Controller.clickImg("images/sell/store.png")
+def openStore(point: Point | None = None):
+    if not point:
+        return
+    Controller.click(point)
     time.sleep(1)
     Controller.clickImg("images/sell/storeMenu.png")
     time.sleep(1)
@@ -19,7 +22,7 @@ def openStore():
 def sell():
     Controller.press("A")
     Controller.press("Space")
-    Controller.press("Left")
+    Controller.press("Left", 0.1)
     Controller.press("Space")
     Controller.press("Esc")
 

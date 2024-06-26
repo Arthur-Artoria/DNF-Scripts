@@ -11,8 +11,8 @@ from constants import Monitor
 type Listener = Callable[[], bool | None]
 
 __listenFlag = True
-__shot: np.ndarray | None = None
-__shotGray: np.ndarray | None = None
+__shot: np.ndarray
+__shotGray: np.ndarray
 __monitor = Monitor.DNF_MONITOR
 __listenerList: list[Listener] = []
 
@@ -22,6 +22,7 @@ def listen():
     global __shotGray
     global __listenFlag
 
+    print("启动监听器")
     __listenFlag = True
 
     with mss.mss() as sct:
@@ -44,6 +45,9 @@ def __close() -> bool:
 
 def __dispatchListenerList():
     global __listenerList
+
+    # print("监听器触发", len(__listenerList), __listenerList)
+
     for matcher in __listenerList:
         if matcher():
             __listenerList.remove(matcher)
@@ -72,16 +76,19 @@ def clear():
     __listenerList = []
 
 
+def getShot(color: int = cv.COLOR_BGR2GRAY) -> np.ndarray:
+    if color == cv.COLOR_BGR2GRAY:
+        return __shotGray
+    else:
+        return cv.cvtColor(__shot, color)
+
+
 def match(
     target: str,
     area: Screen.Rect | None = None,
     color: int = cv.COLOR_BGR2GRAY,
 ):
-    if __shotGray is None:
-        # TODO: 抛出异常
-        print("[ScreenStream] 截图未初始化")
-        return ()
-    return Screen.match(target, __shotGray, area, color)
+    return Screen.match(target, getShot(color), area, color)
 
 
 def exist(
@@ -89,12 +96,8 @@ def exist(
     area: Screen.Rect | None = None,
     color: int = cv.COLOR_BGR2GRAY,
 ) -> bool:
-    if __shotGray is None:
-        # TODO: 抛出异常
-        print("[ScreenStream] 截图未初始化")
-        return False
     return (
-        Screen.getFirstPoint(Screen.match(target, __shotGray, area, color), area)
+        Screen.getFirstPoint(Screen.match(target, getShot(color), area, color), area)
         is not None
     )
 
@@ -107,3 +110,15 @@ def drawRect(point: Screen.Point, color: tuple[int, int, int]):
 
 def matchListAny(targetList: list[str], area: Screen.Rect | None = None):
     return Screen.matchListAny(targetList, __shotGray, area)
+
+
+if __name__ == "__main__":
+    sleep(2)
+
+    def matcher():
+        point = Screen.getFirstPoint(match("images/dungeons/roleEnd.png"))
+        print(point)
+
+    addListener(matcher)
+
+    license()
