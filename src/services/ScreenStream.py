@@ -1,9 +1,12 @@
+from multiprocessing import Process
 from time import sleep
 import time
 from typing import Callable
 import mss
 import numpy as np
 import cv2 as cv
+import win32gui
+
 
 from services import Controller, Screen
 from constants import Monitor
@@ -31,7 +34,7 @@ def listen():
             __shotGray = cv.cvtColor(__shot, cv.COLOR_BGR2GRAY)  # type: ignore
             __dispatchListenerList()
 
-            # cv.imshow("DNF", __shot)  # type: ignore
+            cv.imshow("DNF", __shot)  # type: ignore
 
             if __close():
                 __listenFlag = False
@@ -112,13 +115,32 @@ def matchListAny(targetList: list[str], area: Screen.Rect | None = None):
     return Screen.matchListAny(targetList, __shotGray, area)
 
 
+def action():
+    sleep(5)
+    handler = win32gui.FindWindow(
+        None, "ScreenStream.py - DNF-Scripts - Visual Studio Code"
+    )
+    win32gui.SetForegroundWindow(handler)
+    rect = win32gui.GetWindowRect(handler)
+    left, top, right, bottom = rect
+    width = right - left
+    height = bottom - top
+    win32gui.MoveWindow(handler, -8, -1, width, height, True)
+    sleep(20)
+
+
 if __name__ == "__main__":
     sleep(2)
 
     def matcher():
-        point = Screen.getFirstPoint(match("images/dungeons/roleEnd.png"))
-        print(point)
+        point = Screen.getFirstPoint(match("test.png"))
+        if point:
+            drawRect(point, (0, 0, 255))
 
     addListener(matcher)
 
-    license()
+    actionProcess = Process(target=action)
+    actionProcess.start()
+
+    listen()
+    actionProcess.join()

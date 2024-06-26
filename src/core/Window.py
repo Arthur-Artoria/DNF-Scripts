@@ -46,4 +46,6 @@ def __moveWindow():
 
 
 if __name__ == "__main__":
-    setWindow()
+    hwnd = win32gui.GetForegroundWindow()
+    # 获取窗口标题
+    print(win32gui.GetWindowText(hwnd))
