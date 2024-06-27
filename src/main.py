@@ -6,7 +6,7 @@ from services import Controller, ScreenStream
 from core.City import City
 
 
-roleIndex = 3
+roleIndex = 0
 while True:
     Controller.setup()
     roleIndex = SelectRole.selectRole(roleIndex)

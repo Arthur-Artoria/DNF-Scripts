@@ -14,7 +14,7 @@ def openStore(point: Point | None = None):
         return
     Controller.click(point)
     time.sleep(1)
-    Controller.clickImg("images/sell/storeMenu.png")
+    Controller.clickImg("images/sell/storeMenu.png", {"x": 5, "y": 5})
     time.sleep(1)
     sell()
 
