@@ -8,6 +8,7 @@ class City:
     dungeon: Dungeon | None = None
 
     def __init__(self) -> None:
+        self.time = None
         ScreenStream.addListener(self.matchCity)
 
     def matchCity(self):
