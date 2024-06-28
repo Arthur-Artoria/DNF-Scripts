@@ -3,7 +3,7 @@ from random import randint
 from time import sleep
 import time
 from typing import Literal
-from services import Controller, Screen, ScreenStream
+from services import Controller, Screen, ScreenStream, Serial
 from constants import Monitor
 
 type Direction = Literal[
@@ -70,7 +70,7 @@ class Role:
         self.__updateRoleLocation(Screen.match(self.target))
 
     def move(self, direction: Direction, seconds: float = 0.5):
-        Controller.press(direction, seconds)
+        Controller.press(direction)
 
     # 尝试向不同方向移动角色各一次
     def __lookForRole(self):
@@ -120,7 +120,7 @@ class Role:
     def __move(
         self,
         target: Screen.Point,
-        offset: Controller.Offset = {"x": 0, "y": 0},
+        offset: Serial.Offset = (0, 0),
         seconds: float = 0.3,
     ):
         if not self.point:
@@ -128,16 +128,17 @@ class Role:
 
         x, y = target
         roleX, roleY = self.point
+        offsetX, offsetY = offset
 
         # print("move 偏移", offset)
 
         hDirection = ""
         vDirection = ""
 
-        if abs(x - roleX) > offset["x"]:
+        if abs(x - roleX) > offsetX:
             hDirection = "Right" if x > roleX else "Left"
 
-        if abs(y - roleY) > offset["y"]:
+        if abs(y - roleY) > offsetY:
             vDirection = "Down" if y > roleY else "Up"
 
         if hDirection or vDirection:
@@ -172,7 +173,7 @@ class Role:
     def attack(
         self,
         monsterList: list[Screen.Point],
-        offset: Controller.Offset = {"x": 0, "y": 0},
+        offset: Serial.Offset = (0, 0),
     ):
         point = self.__getNearestPoint(monsterList)
 
@@ -189,9 +190,9 @@ class Role:
             roleX = rolePoint[0]
 
             if monsterX > roleX:
-                Controller.press("Right", 0.01)
+                Controller.press("Right")
             else:
-                Controller.press("Left", 0.01)
+                Controller.press("Left")
 
             if self.skillAttack() == 0:
                 self.__defaultAttack()
@@ -202,7 +203,7 @@ class Role:
         if not point:
             return
 
-        self.__move(point, {"x": 10, "y": 10}, self.speed)
+        self.__move(point, (10, 10), self.speed)
 
     def checkLock(self) -> bool:
         if not self.point:
@@ -221,7 +222,7 @@ class Role:
         count = 0
         while count < 5:
             count += 1
-            Controller.press("X", 0.1)
+            Controller.press("X")
 
     # 技能攻击
     def skillAttack(self) -> int:
@@ -230,7 +231,7 @@ class Role:
         for skill in self.__skillList:
             if (time.time() - skill["dispatch"]) > skill["CD"]:
                 skill["dispatch"] = time.time()
-                Controller.press(skill["key"], skill["duration"])
+                Controller.press(skill["key"])
                 count += 1
                 if count == 1:
                     break
@@ -238,11 +239,11 @@ class Role:
         return count
 
     def ticketAttack(self):
-        Controller.press(self.__ticket["key"], self.__ticket["duration"])
+        Controller.press(self.__ticket["key"])
 
     def buff(self):
         for buff in self.__buffList:
-            Controller.press(buff, 1)
+            Controller.press(buff)
 
 
 if __name__ == "__main__":

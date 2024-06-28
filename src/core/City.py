@@ -44,13 +44,12 @@ class City:
         Sell.openStore(storePoint)
 
     def matchWeakness(self):
-        locations = ScreenStream.match("images/weakness.png")
-        point = Screen.getFirstPoint(locations)
+        point = Screen.getFirstPoint(ScreenStream.match("images/weakness.png"))
 
         if not point:
             return
 
-        Controller.click(locations)
+        Controller.click(point)
         sleep(1)
         Controller.clickImg("images/weaknessConfirm.png")
         sleep(1)

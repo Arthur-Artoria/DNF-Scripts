@@ -31,7 +31,8 @@ def click(point: Screen.Point | None, offset: Serial.Offset | None = None):
     queue.put((Serial.INSTRUCTION_CLICK, point, offset))
 
 
-def mouseMove(point: Screen.Point):
+def mouseMove(x: int, y: int):
+    point = (x, y)
     queue.put((Serial.INSTRUCTION_MOUSE_MOVE, point, None))
 
 
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     print("11111")
     release()
     click((100, 100))
-    mouseMove((100, 100))
+    mouseMove(100, 100)
 
     close()
 

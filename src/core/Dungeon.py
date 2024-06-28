@@ -11,7 +11,7 @@ from core.MonsterRoom import MonsterRoom
 from core.FirstRoom import FirstRoom
 from core.Role import Direction, Role
 from core.System import closeSystemSetting
-from services import Controller, Screen, ScreenStream
+from services import Controller, Screen, ScreenStream, Serial
 from core import Roles_local as Roles
 from core.Room import Room
 
@@ -35,7 +35,7 @@ class Dungeon:
         name: str,
         area: str,
         target: str,
-        offset: Controller.Offset | None,
+        offset: Serial.Offset | None,
         roleOption,
         direction: Literal["Left", "Right"] = "Right",
     ):
@@ -57,13 +57,11 @@ class Dungeon:
         # 打开工会
         Controller.press(";")
         # 点击传送
-        Controller.clickImg("images/transport.png", {"x": 20, "y": 20})
+        Controller.clickImg("images/transport.png", (20, 20))
         # 同意打开地图
-        Controller.press(
-            "Space",
-        )
+        Controller.press("Space")
         # 点击世界地图
-        Controller.clickImg("images/mapSelector.png", {"x": 10, "y": 10})
+        Controller.clickImg("images/mapSelector.png", (10, 10))
 
     def __transport(self):
         # 点击目标区域
@@ -77,7 +75,7 @@ class Dungeon:
 
     def moveToDungeonList(self):
         # 走向地下城
-        Controller.press(self.direction, 3)
+        Controller.press(self.direction)
         ScreenStream.addListener(self.matchDungeonCard)
 
     def matchDungeonCard(self):
@@ -90,7 +88,7 @@ class Dungeon:
             if not point:
                 return
             else:
-                Controller.click(locations)
+                Controller.click(point)
 
         Controller.press("Space")
         return ScreenStream.addListener(self.matchDungeonEntered)
@@ -234,7 +232,7 @@ if __name__ == "__main__":
         name="Silence",
         area="images/dungeons/1.png",
         target="images/dungeons/target.png",
-        offset={"x": 50, "y": 50},
+        offset=(50, 50),
         roleOption=Roles.roleList[3],
         direction="Right",
     )

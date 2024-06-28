@@ -121,7 +121,7 @@ class MonsterRoom(Room):
             thread.join()
 
         if len(self.__monsterPointList) > 0:
-            self.role.attack(self.__monsterPointList, {"x": 800, "y": 120})
+            self.role.attack(self.__monsterPointList, (800, 120))
         else:
             self.__refreshRolePosition()
 
