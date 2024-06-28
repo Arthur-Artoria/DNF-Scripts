@@ -5,7 +5,7 @@ from typing import Literal
 
 from services import Controller
 
-__BASE_PATH = "images/roles"
+__BASE_PATH = "images/roles_local_local"
 __roleList: list[str] = []
 __roleIndex: int = 0
 
