@@ -250,7 +250,7 @@ if __name__ == "__main__":
     # 初始化
     # time.sleep(3)
     # Controller.setup()
-    # role = Role("images/roles/3.png")
+    # role = Role("images/roles_local/3.png")
     # role.refreshRoleLocation()
     # role.refreshRoleLocation()
     # ScreenStream.listen()

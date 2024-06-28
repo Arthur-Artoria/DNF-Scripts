@@ -27,11 +27,13 @@ class City:
             self.removeListenerList()
 
     def addListenerList(self):
+        ScreenStream.addListener(self.matchConfirm)
         ScreenStream.addListener(self.matchWeakness)
         ScreenStream.addListener(self.matchStore)
         ScreenStream.addListener(self.dispatchRole)
 
     def removeListenerList(self):
+        ScreenStream.removeListener(self.matchConfirm)
         ScreenStream.removeListener(self.matchWeakness)
         ScreenStream.removeListener(self.matchStore)
         ScreenStream.removeListener(self.dispatchRole)
@@ -54,6 +56,15 @@ class City:
         Controller.click(locations)
         sleep(1)
         Controller.clickImg("images/weaknessConfirm.png")
+        sleep(1)
+
+    def matchConfirm(self):
+        point = Screen.getFirstPoint(ScreenStream.match("images/confirm.png"))
+
+        if not point:
+            return
+
+        Controller.click(point)
         sleep(1)
 
     def dispatchRole(self):

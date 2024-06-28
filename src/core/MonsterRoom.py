@@ -286,7 +286,7 @@ if __name__ == "__main__":
     pass
     # time.sleep(2)
     # Controller.setup()
-    # role = Role("images/roles/3.png")
+    # role = Role("images/roles_local/3.png")
     # room = Room(role, 3, 0, "Right")
     # ScreenStream.listen()
     # Controller.release()
