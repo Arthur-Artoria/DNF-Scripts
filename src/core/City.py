@@ -9,6 +9,8 @@ class City:
 
     def __init__(self) -> None:
         self.time = None
+        self.matchStoreCount = 0
+        self.matchWeaknessCount = 0
         ScreenStream.addListener(self.matchCity)
 
     def matchCity(self):
@@ -27,45 +29,66 @@ class City:
             self.removeListenerList()
 
     def addListenerList(self):
-        ScreenStream.addListener(self.matchConfirm)
+        ScreenStream.addListener(self.matchClose)
         ScreenStream.addListener(self.matchWeakness)
         ScreenStream.addListener(self.matchStore)
-        ScreenStream.addListener(self.dispatchRole)
+        ScreenStream.addListener(self.matchRoleEnd)
+        if self.matchWeaknessCount > 2:
+            ScreenStream.addListener(self.dispatchRole)
 
     def removeListenerList(self):
-        ScreenStream.removeListener(self.matchConfirm)
+        self.matchStoreCount = 0
+        self.matchWeaknessCount = 0
+        ScreenStream.removeListener(self.matchClose)
         ScreenStream.removeListener(self.matchWeakness)
         ScreenStream.removeListener(self.matchStore)
+        ScreenStream.removeListener(self.matchRoleEnd)
         ScreenStream.removeListener(self.dispatchRole)
 
     def matchStore(self):
+        if self.matchStoreCount > 3:
+            return
+        self.matchStoreCount += 1
         storePoint = Screen.getFirstPoint(ScreenStream.match("images/sell/store.png"))
 
         if not storePoint:
             return
-
+        self.matchStoreCount = 4
         Sell.openStore(storePoint)
 
     def matchWeakness(self):
-        locations = ScreenStream.match("images/weakness.png")
-        point = Screen.getFirstPoint(locations)
+        self.matchWeaknessCount += 1
+        point = Screen.getFirstPoint(ScreenStream.match("images/weakness.png"))
 
         if not point:
             return
 
-        Controller.click(locations)
+        self.matchWeaknessCount = 4
+
+        Controller.click(point)
         sleep(1)
         Controller.clickImg("images/weaknessConfirm.png")
         sleep(1)
 
-    def matchConfirm(self):
-        point = Screen.getFirstPoint(ScreenStream.match("images/confirm.png"))
+    def matchClose(self):
+        point = Screen.getFirstPoint(ScreenStream.match("images/close.png"))
 
         if not point:
             return
 
         Controller.click(point)
         sleep(1)
+
+    def matchRoleEnd(self):
+        roleEnd = ScreenStream.exist("images/dungeons/roleEnd.png")
+
+        if not roleEnd:
+            return
+
+        if not self.dungeon:
+            return
+
+        self.dungeon.backCelia()
 
     def dispatchRole(self):
         if not self.dungeon:

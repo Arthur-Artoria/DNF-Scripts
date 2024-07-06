@@ -4,6 +4,7 @@ import time
 from typing import Callable, Literal
 
 import cv2
+from constants.DNFConfig_local import REENTER
 from core import SelectRole, Sell
 from core.CreviceRoom import CreviceRoom
 from core.BossRoom import BossRoom
@@ -120,7 +121,9 @@ class Dungeon:
     def createRoom(self, row: int, col: int, crevice: bool = False):
         id = f"{row}_{col}"
         if self.room:
-            if id == self.room.id:
+            if id == "Boss":
+                self.room.destroy()
+            elif id == self.room.id:
                 return
             else:
                 self.room.destroy()
@@ -175,7 +178,7 @@ class Dungeon:
     def reenterDungeon(self):
         self.destroyRoom()
         self.role.resetRefreshRoleLocationCount()
-        Controller.press("ShiftRight")
+        Controller.press(REENTER)
         ScreenStream.removeListener(self.matchRoom)
         ScreenStream.addListener(self.matchDungeonEntered)
 

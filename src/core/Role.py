@@ -242,7 +242,7 @@ class Role:
 
     def buff(self):
         for buff in self.__buffList:
-            Controller.press(buff, 1)
+            Controller.press(buff, 0.1, 0.1)
 
 
 if __name__ == "__main__":

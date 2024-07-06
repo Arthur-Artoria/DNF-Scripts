@@ -1,4 +1,5 @@
 from operator import eq
+import os
 import time
 from core import Roles_local, SelectRole
 from core.Dungeon import Dungeon
@@ -15,8 +16,8 @@ while True:
     if roleIndex == -1:
         print("关闭")
         Controller.close()
+        os.system("shutdown -s -t  10 ")
         break
-
     time.sleep(3)
     roleOption = Roles_local.roleList[roleIndex - 1]
     city = City()

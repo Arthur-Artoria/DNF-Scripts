@@ -5,7 +5,7 @@ from typing import Literal
 
 from services import Controller
 
-__BASE_PATH = "images/roles_local_local"
+__BASE_PATH = "images/roles_local"
 __roleList: list[str] = []
 __roleIndex: int = 0
 
@@ -32,7 +32,7 @@ def selectRole(index=__roleIndex) -> int:
     if not __roleList:
         __getRoleList()
 
-    if index > len(__roleList):
+    if index == len(__roleList):
         return -1
 
     role = __roleList[index]
