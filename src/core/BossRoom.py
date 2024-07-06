@@ -1,4 +1,7 @@
+import os
+from threading import Thread
 from typing import Callable
+from constants.DNFConfig_local import COLLECT
 from core import Roles_local, Sell
 from core.Role import Role
 from core.Room import Room
@@ -7,6 +10,7 @@ from services import Controller, ScreenStream
 
 class BossRoom(Room):
     BOSS_TARGET = "images/dungeons/boss.png"
+    BOSS_BASE_PATH = "images/dungeons/boss/"
 
     def __init__(
         self,
@@ -18,25 +22,40 @@ class BossRoom(Room):
         super().__init__(id, role)
         self.sell = sell
         self.onPickUpEnd = onPickUpEnd
-        ScreenStream.addListener(self.matchBoss)
+        self.bossList: list[str] = []
+        self.bossThreadList: list[Thread] = []
 
-    def matchBoss(self):
-        exitBoss = ScreenStream.exist(self.BOSS_TARGET)
+        self.initBossList()
+        ScreenStream.addListener(self.matchBossList)
+        print("Boss房间 初始化")
 
-        if not exitBoss:
-            return
+    def initBossList(self):
+        self.bossList = list(
+            map(
+                lambda path: self.BOSS_BASE_PATH + path,
+                os.listdir(self.BOSS_BASE_PATH),
+            )
+        )
 
-        self.role.ticketAttack()
-        return ScreenStream.addListener(self.matchReward)
+    def matchBossList(self):
+        self.bossThreadList = []
+
+        for boss in self.bossList:
+            exitBoss = ScreenStream.exist(boss)
+
+            if exitBoss:
+                print("匹配到Boss", boss)
+                self.role.ticketAttack()
+                ScreenStream.addListener(self.matchReward)
 
     def matchReward(self):
-        print("开始匹配奖励")
         existReenter = ScreenStream.exist("images/dungeons/reenter.png")
 
         if not existReenter:
             return
 
         print("匹配到奖励")
+        ScreenStream.removeListener(self.matchBossList)
 
         self.handleStore()
         self.pickUpDrops()
@@ -54,13 +73,13 @@ class BossRoom(Room):
 
     def pickUpDrops(self):
         # 聚物
-        Controller.press("Delete", 0.2)
+        Controller.press(COLLECT, 0.2)
         # 拾取奖励
         Controller.press("X", 3)
 
     def destroy(self):
         super().destroy()
         print("Boss房间 销毁")
-        ScreenStream.removeListener(self.matchBoss)
+        ScreenStream.removeListener(self.matchBossList)
         ScreenStream.removeListener(self.matchReward)
         ScreenStream.removeListener(self.onPickUpEnd)

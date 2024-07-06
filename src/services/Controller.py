@@ -18,7 +18,10 @@ def close():
     queue.put(None)
 
 
-def press(key: str):
+def press(key: str | None, seconds: float = 0.5, sleep: float = 0.5):
+    if key == None:
+        time.sleep(0.5)
+        return
     data = "".join(map(lambda x: Keyboard.options[x]["key"], key.split(" ")))
     queue.put((Serial.INSTRUCTION_PRESS, data, None))
 
