@@ -7,6 +7,7 @@ def openSystemSetting():
 
     while not existSystemSetting:
         Controller.press("Esc", 0.1, 1)
+        Controller.mouseMove(10, 1000)
         existSystemSetting = Screen.exist("images/settings.png")
         sleep(1)
 

@@ -30,9 +30,9 @@ class City:
 
     def addListenerList(self):
         ScreenStream.addListener(self.matchClose)
+        ScreenStream.addListener(self.matchRoleEnd)
         ScreenStream.addListener(self.matchWeakness)
         ScreenStream.addListener(self.matchStore)
-        ScreenStream.addListener(self.matchRoleEnd)
         if self.matchWeaknessCount > 2:
             ScreenStream.addListener(self.dispatchRole)
 
@@ -40,9 +40,9 @@ class City:
         self.matchStoreCount = 0
         self.matchWeaknessCount = 0
         ScreenStream.removeListener(self.matchClose)
+        ScreenStream.removeListener(self.matchRoleEnd)
         ScreenStream.removeListener(self.matchWeakness)
         ScreenStream.removeListener(self.matchStore)
-        ScreenStream.removeListener(self.matchRoleEnd)
         ScreenStream.removeListener(self.dispatchRole)
 
     def matchStore(self):
@@ -53,6 +53,9 @@ class City:
 
         if not storePoint:
             return
+
+        print("发现商店魔法书", storePoint)
+
         self.matchStoreCount = 4
         Sell.openStore(storePoint)
 
@@ -88,6 +91,7 @@ class City:
         if not self.dungeon:
             return
 
+        # print("角色疲劳已用光")
         self.dungeon.backCelia()
 
     def dispatchRole(self):

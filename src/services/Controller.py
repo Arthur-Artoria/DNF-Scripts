@@ -41,6 +41,7 @@ def __initMouse():
 
 
 def close():
+    release()
     serial.ser.close()  # type: ignore
 
 

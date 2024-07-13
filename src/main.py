@@ -39,7 +39,8 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except:
-        Controller.release()
+    except Exception as error:
         Controller.close()
-        print("程序异常退出")
+        print("程序异常退出", error)
+    except:
+        Controller.close()
