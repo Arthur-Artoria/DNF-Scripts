@@ -16,6 +16,8 @@ def setup(sleep: bool = True):
 
 def close():
     queue.put(None)
+    release()
+    serial.ser.close()  # type: ignore
 
 
 def press(key: str | None, seconds: float = 0.5, sleep: float = 0.5):

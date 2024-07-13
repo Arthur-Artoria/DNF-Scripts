@@ -86,6 +86,10 @@ class Role:
             self.move(direction, 0.3)
             locations = Screen.match(self.target)
             self.__updateRoleLocation(locations)
+            if count >= 40:
+                self.prevPoint = (0, 0)
+                self.point = (0, 0)
+                break
 
     # 通过移动角色，刷新角色位置，从而检测到原本场景外的事物
     # TODO：初始水平方向选择要优化，并且方向要保留

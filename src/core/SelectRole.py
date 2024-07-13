@@ -3,6 +3,7 @@ import sys
 import time
 from typing import Literal
 
+from core import System
 from services import Controller
 
 __BASE_PATH = "images/roles_local"
@@ -22,7 +23,7 @@ def __startGame():
 
 
 def toSelectRole():
-    Controller.press("Esc")
+    System.openSystemSetting()
     Controller.clickImg("images/selectRole.png")
     time.sleep(2)
 

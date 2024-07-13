@@ -52,6 +52,9 @@ def __dispatchListenerList():
     # print("监听器触发", len(__listenerList), __listenerList)
 
     for matcher in __listenerList:
+        if not __listenFlag:
+            return
+
         if matcher():
             __listenerList.remove(matcher)
 

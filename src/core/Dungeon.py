@@ -6,6 +6,7 @@ from typing import Callable, Literal
 import cv2
 from constants.DNFConfig_local import REENTER
 from core import SelectRole, Sell
+from core import System
 from core.CreviceRoom import CreviceRoom
 from core.BossRoom import BossRoom
 from core.MonsterRoom import MonsterRoom
@@ -148,6 +149,8 @@ class Dungeon:
         self.room = BossRoom(
             "Boss", self.role, self.matchRoleEnd, self.finishCount > 10
         )
+        if self.finishCount > 10:
+            self.finishCount = 0
 
     def matchRoom(self):
         x = 1081
@@ -176,7 +179,7 @@ class Dungeon:
     def reenterDungeon(self):
         self.destroyRoom()
         self.role.resetRefreshRoleLocationCount()
-        Controller.press(REENTER)
+        Controller.press(REENTER)  # type: ignore
         ScreenStream.removeListener(self.matchRoom)
         ScreenStream.addListener(self.matchDungeonEntered)
 
@@ -185,9 +188,7 @@ class Dungeon:
 
         self.destroyRoom()
 
-        Controller.mouseMove(10, 10)
-        Controller.press("Esc")
-        sleep(1)
+        System.openSystemSetting()
         Controller.clickImg("images/backCity.png")
         sleep(1)
 
@@ -207,7 +208,6 @@ class Dungeon:
     def switchRole(self):
         self.needSwitchRole = True
         self.removeListenerList()
-        self.destroyRoom()
         self.backCity()
 
     def backCelia(self):
