@@ -3,19 +3,12 @@ import sys
 import time
 from typing import Literal
 
-from core import System
-from services import Controller
+from core import Roles_local, System
+from services import Controller, Screen
 
 __BASE_PATH = "images/roles_local"
-__roleList: list[str] = []
+__roleList = Roles_local.roleList
 __roleIndex: int = 0
-
-
-def __getRoleList():
-    global __roleList
-    __roleList = list(
-        map(lambda path: __BASE_PATH + "/" + path, os.listdir(__BASE_PATH))
-    )
 
 
 def __startGame():
@@ -30,17 +23,37 @@ def toSelectRole():
 
 def selectRole(index=__roleIndex) -> int:
     global __roleIndex
-    if not __roleList:
-        __getRoleList()
 
     if index == len(__roleList):
         return -1
 
     role = __roleList[index]
-    Controller.clickImg(role)
     __roleIndex = index + 1
-    Controller.press("Space")
+
+    if "skip" in role and role["skip"] is True:
+        print(role["name"], "跳过")
+        return selectRole(__roleIndex)
+
+    target = f"{__BASE_PATH}/{index}.png"
+
+    point = Screen.getFirstPoint(Screen.match(target))
+
+    if point:
+        Controller.click(point)
+        Controller.press("Space")
+    else:
+        pageDown()
+        return selectRole(index)
+
     return __roleIndex
+
+
+def pageDown():
+    Controller.click((1187, 800))
+
+
+def pageUp():
+    Controller.click((1187, 510))
 
 
 if __name__ == "__main__":
