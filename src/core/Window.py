@@ -24,8 +24,7 @@ def __getWindow():
 
 
 def __openController():
-    sleep(1)
-    Controller.press("EC")
+    Controller.press("Esc")
 
 
 def __setWindowSize():
