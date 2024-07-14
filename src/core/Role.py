@@ -29,7 +29,6 @@ class Role:
         self.__ticket = options["ticket"]
         self.__buffList = options["buffList"]
         self.speed = options["speed"]
-        self.firstRoom = options["firstRoom"]
 
     def setup(self):
         ScreenStream.addListener(self.setRoleLocation)

@@ -1,5 +1,5 @@
 from time import sleep, time
-from core import Sell, System
+from core import Roles_local, Sell, System
 from core.Dungeon import Dungeon
 from services import Controller, Screen, ScreenStream
 from services.Scene import Scene
@@ -10,25 +10,19 @@ class City(Scene):
 
     def __init__(self, dungeon: Dungeon) -> None:
         super().__init__("城镇", self.TARGET)
+        self.limited = False
         self.dungeon = dungeon
-        self.matchStoreCount = 0
-        self.matchWeaknessCount = 0
-        # ScreenStream.addListener(self.matcher)
 
-    def matcher(self):
-        inCity = ScreenStream.exist(self.TARGET)
+        self.closeScene = self.createCloseScene()
+        self.storeScene = self.createStoreScene()
+        self.weaknessScene = self.createWeaknessScene()
+        self.roleEndScene = self.createRoleEndScene()
 
-        if inCity:
-            self.time = self.time or time()
+        self.weaknessScene.setNextScene(self.roleEndScene)
 
-            if time() - self.time > 120:
-                # 在城镇中超时
-                self.escape()
-            else:
-                self.addListenerList()
-        else:
-            self.time = None
-            self.removeListenerList()
+        self.addChildScene(self.closeScene)
+        self.addChildScene(self.storeScene)
+        self.addChildScene(self.weaknessScene)
 
     def createCloseScene(self) -> Scene:
         name = "关闭按钮"
@@ -52,103 +46,50 @@ class City(Scene):
         onNotMatched = self.handleRoleEndNotMatched
         return Scene(name, target, onMatched, onNotMatched)
 
-    def handleCloseMatched(self, point: Screen.Point):
+    def handleCloseMatched(self, point: Screen.Point, locations):
         Controller.click(point)
 
-    def handleWeaknessMatched(self, point: Screen.Point):
+    def handleWeaknessMatched(self, point: Screen.Point, locations):
         Controller.click(point)
         sleep(1)
         Controller.clickImg("images/weaknessConfirm.png")
         sleep(1)
 
-    def handleStoreMatched(self, point: Screen.Point):
+    def handleStoreMatched(self, point: Screen.Point, locations):
         Sell.openStore(point)
 
-    def handleRoleEndMatched(self, point: Screen.Point):
+    def handleRoleEndMatched(self, point: Screen.Point, locations):
         self.dungeon.backCelia()
 
     def handleRoleEndNotMatched(self):
         self.dungeon.into()
 
-    def addListenerList(self):
-        ScreenStream.addListener(self.matchClose)
-        ScreenStream.addListener(self.matchRoleEnd)
-        ScreenStream.addListener(self.matchWeakness)
-        ScreenStream.addListener(self.matchStore)
-        if self.matchWeaknessCount > 2:
-            ScreenStream.addListener(self.dispatchRole)
-
-    def removeListenerList(self):
-        self.matchStoreCount = 0
-        self.matchWeaknessCount = 0
-        ScreenStream.removeListener(self.matchClose)
-        ScreenStream.removeListener(self.matchRoleEnd)
-        ScreenStream.removeListener(self.matchWeakness)
-        ScreenStream.removeListener(self.matchStore)
-        ScreenStream.removeListener(self.dispatchRole)
-
-    def matchStore(self):
-        if self.matchStoreCount > 3:
-            return
-        self.matchStoreCount += 1
-        storePoint = Screen.getFirstPoint(ScreenStream.match("images/sell/store.png"))
-
-        if not storePoint:
-            return
-
-        print("发现商店魔法书", storePoint)
-
-        self.matchStoreCount = 4
-        Sell.openStore(storePoint)
-
-    def matchWeakness(self):
-        self.matchWeaknessCount += 1
-        point = Screen.getFirstPoint(ScreenStream.match("images/weakness.png"))
-
-        if not point:
-            return
-
-        self.matchWeaknessCount = 4
-
-        Controller.click(point)
-        sleep(1)
-        Controller.clickImg("images/weaknessConfirm.png")
-        sleep(1)
-
-    def matchClose(self):
-        point = Screen.getFirstPoint(ScreenStream.match("images/close.png"))
-
-        if not point:
-            return
-
-        Controller.click(point)
-        sleep(1)
-
-    def matchRoleEnd(self):
-        roleEnd = ScreenStream.exist("images/dungeons/roleEnd.png")
-
-        if not roleEnd:
-            return
-
-        if not self.dungeon:
-            return
-
-        # print("角色疲劳已用光")
-        self.dungeon.backCelia()
-
-    def dispatchRole(self):
-        if not self.dungeon:
-            return
-
-        System.closeSystemSetting()
-
-        if self.dungeon.needSwitchRole:
-            self.dungeon.backCelia()
-        else:
-            self.dungeon.into()
+    def destroyChildScenes(self):
+        super().destroyChildScenes()
+        self.roleEndScene.destroy()
 
     def escape(self):
         ScreenStream.stop()
         ScreenStream.addListener(self.matcher)
         System.closeSystemSetting()
         ScreenStream.listen()
+
+
+if __name__ == "__main__":
+    Controller.setup()
+
+    roleOption = Roles_local.roleList[0]
+    dungeon = Dungeon(
+        name="Silence",
+        area="images/dungeons/1.png",
+        target="images/dungeons/mapTarget.png",
+        offset={"x": 200, "y": 10},
+        roleOption=roleOption,
+        direction="Right",
+    )
+
+    city = City(dungeon)
+    city.setup()
+    ScreenStream.listen()
+    ScreenStream.stop()
+    Controller.close()

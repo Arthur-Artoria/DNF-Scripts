@@ -21,7 +21,6 @@ def main():
             break
         time.sleep(3)
         roleOption = Roles_local.roleList[roleIndex - 1]
-        city = City()
         dungeon = Dungeon(
             name="Silence",
             area="images/dungeons/1.png",
@@ -30,6 +29,7 @@ def main():
             roleOption=roleOption,
             direction="Right",
         )
+        city = City(dungeon)
         city.dungeon = dungeon
         ScreenStream.listen()
         ScreenStream.stop()
