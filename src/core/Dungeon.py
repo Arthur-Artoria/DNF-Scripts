@@ -23,12 +23,12 @@ class Dungeon:
     __ROOM_CREVICE_TARGET = "images/dungeons/room2.png"
     __ROLE_TARGET = "images/dungeons/roleTarget.png"
     roomList = {
-        "3_0": {"nextRoomDirection": "Up", "first": True, "drop": "drop1.png"},
-        "2_0": {"nextRoomDirection": "Right", "drop": "drop2.png"},
-        "2_1": {"nextRoomDirection": "Up", "drop": "drop3.png"},
-        "1_1": {"nextRoomDirection": "Up", "drop": "drop3.png"},
-        "0_1": {"nextRoomDirection": "Right", "drop": "drop4.png"},
-        "0_2": {"nextRoomDirection": "Right", "drop": "drop5.png"},
+        "3_0": {"nextRoomDirection": "Up", "first": True, "door": "door1.png"},
+        "2_0": {"nextRoomDirection": "Right", "door": "door2.png"},
+        "2_1": {"nextRoomDirection": "Up", "door": "door3.png"},
+        "1_1": {"nextRoomDirection": "Up", "door": "door3.png"},
+        "0_1": {"nextRoomDirection": "Right", "door": "door4.png"},
+        "0_2": {"nextRoomDirection": "Right", "door": "door5.png"},
         "boss": {"boss": True},
     }
 

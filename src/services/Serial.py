@@ -51,6 +51,7 @@ def worker(queue: Queue):
     while True:
         instruction = queue.get()
         if instruction is None:
+            close()
             break
         else:
             __handleInstruction(instruction)
@@ -58,20 +59,17 @@ def worker(queue: Queue):
 
 def __handleInstruction(instruction: Instruction):
     if instruction[0] == INSTRUCTION_PRESS:
-        print("press", instruction)
-        # press(instruction[1])
+        press(instruction[1])
     elif instruction[0] == INSTRUCTION_RELEASE:
-        print("release", instruction)
-        # release()
+        release()
     elif instruction[0] == INSTRUCTION_CLICK:
-        print("click", instruction)
-        # click(instruction[1], instruction[2])
+        click(instruction[1], instruction[2])
     elif instruction[0] == INSTRUCTION_MOUSE_MOVE:
-        print("mouseMove", instruction)
-        # mouseMove(instruction[1])
+        mouseMove(instruction[1])
 
 
 def close():
+    release()
     serial.ser.close()  # type: ignore
 
 

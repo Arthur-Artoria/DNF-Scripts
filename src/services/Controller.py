@@ -16,14 +16,12 @@ def setup(sleep: bool = True):
 
 def close():
     queue.put(None)
-    release()
-    serial.ser.close()  # type: ignore
 
 
-def press(key: str | None, seconds: float = 0.5, sleep: float = 0.5):
-    if key == None:
-        time.sleep(0.5)
-        return
+def press(key: str, seconds: float = 0.5, sleep: float = 0.5):
+    # if key == None:
+    #     time.sleep(0.5)
+    #     return
     data = "".join(map(lambda x: Keyboard.options[x]["key"], key.split(" ")))
     queue.put((Serial.INSTRUCTION_PRESS, data, None))
 

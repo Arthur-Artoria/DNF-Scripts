@@ -83,7 +83,7 @@ if __name__ == "__main__":
         name="Silence",
         area="images/dungeons/1.png",
         target="images/dungeons/mapTarget.png",
-        offset={"x": 200, "y": 10},
+        offset=(200, 10),
         roleOption=roleOption,
         direction="Right",
     )
