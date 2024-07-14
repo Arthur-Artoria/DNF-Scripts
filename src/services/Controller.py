@@ -6,16 +6,22 @@ from constants import Keyboard
 
 
 queue: Queue = Queue()
+serialProcess: Process
 
 
 def setup(sleep: bool = True):
+    global serialProcess
     if sleep:
         time.sleep(3)
-    Serial.setup()
+
+    # Serial.setup()
+    serialProcess = Process(target=Serial.worker, args=(queue,))
+    serialProcess.start()
 
 
 def close():
     queue.put(None)
+    serialProcess.terminate()
 
 
 def press(key: str, seconds: float = 0.5, sleep: float = 0.5):
@@ -45,19 +51,6 @@ def clickImg(imgPath: str, offset: Serial.Offset | None = None):
 
 
 if __name__ == "__main__":
-    # setup(False)
+    setup(False)
     # press("Up")
-    # close()
-
-    serialProcess = Process(target=Serial.worker, args=(queue,))
-    serialProcess.start()
-
-    press("Up")
-    print("11111")
-    release()
-    click((100, 100))
-    mouseMove(100, 100)
-
     close()
-
-#

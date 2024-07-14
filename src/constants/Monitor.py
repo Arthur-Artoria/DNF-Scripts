@@ -11,4 +11,4 @@ SCREEN_MONITOR: Monitor = {
     "width": SCREEN_WIDTH,
     "height": SCREEN_HEIGHT,
 }
-DNF_MONITOR: Monitor = {"top": 0, "left": 0, "width": 400, "height": 400}
+DNF_MONITOR: Monitor = {"top": 0, "left": 0, "width": 1206, "height": 900}

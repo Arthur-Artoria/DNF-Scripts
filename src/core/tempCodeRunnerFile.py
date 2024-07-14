@@ -1,1 +1,2 @@
-__matchRoom
+    except:
+        Controller.close()

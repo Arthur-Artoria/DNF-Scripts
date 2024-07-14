@@ -34,7 +34,7 @@ def listen():
             __shotGray = cv.cvtColor(__shot, cv.COLOR_BGR2GRAY)  # type: ignore
             __dispatchListenerList()
 
-            cv.imshow("DNF", __shot)  # type: ignore
+            # cv.imshow("DNF", __shot)  # type: ignore
 
             if __close():
                 __listenFlag = False

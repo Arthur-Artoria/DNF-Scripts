@@ -71,6 +71,26 @@ class Role:
     def move(self, direction: Direction, seconds: float = 0.5):
         Controller.press(direction)
 
+    def go(self, point: Screen.Point):
+        x, y = point
+        roleX, roleY = self.getPoint()
+
+        hDirection = ""
+        vDirection = ""
+
+        if abs(x - roleX) > 50:
+            hDirection = "Right" if x > roleX else "Left"
+
+        if abs(y - roleY) > 40:
+            vDirection = "Down" if y > roleY else "Up"
+
+        if hDirection or vDirection:
+            direction = f"{vDirection} {hDirection}".strip()
+            print("移动到", direction, point)
+            Controller.press(direction)
+        else:
+            print("停止移动")
+
     # 尝试向不同方向移动角色各一次
     def __lookForRole(self):
         count = 0

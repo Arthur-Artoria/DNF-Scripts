@@ -1,4 +1,5 @@
 from multiprocessing import Queue
+import time
 from typing import Any, Literal, Optional
 import serial
 import ch9329Comm
@@ -20,6 +21,8 @@ INSTRUCTION_MOUSE_MOVE = 4
 
 __mouse: ch9329Comm.mouse.DataComm
 __keyboard: ch9329Comm.keyboard.DataComm
+__stopFlag: bool = False
+__prevPressKey: str | None = None
 
 
 def setup():
@@ -48,19 +51,24 @@ def __initMouse():
 
 
 def worker(queue: Queue):
-    while True:
-        instruction = queue.get()
-        if instruction is None:
-            close()
-            break
-        else:
-            __handleInstruction(instruction)
+    try:
+        setup()
+        while True:
+            instruction = queue.get()
+            if instruction is None or __stopFlag is True:
+                __stop()
+                break
+            else:
+                __handleInstruction(instruction)
+    except:
+        __stop()
 
 
 def __handleInstruction(instruction: Instruction):
     if instruction[0] == INSTRUCTION_PRESS:
         press(instruction[1])
     elif instruction[0] == INSTRUCTION_RELEASE:
+        print("释放按键")
         release()
     elif instruction[0] == INSTRUCTION_CLICK:
         click(instruction[1], instruction[2])
@@ -68,16 +76,32 @@ def __handleInstruction(instruction: Instruction):
         mouseMove(instruction[1])
 
 
-def close():
+def __stop():
     release()
     serial.ser.close()  # type: ignore
 
 
+def close():
+    global __stopFlag
+    __stopFlag = True
+
+
 def press(key: str):
-    __keyboard.send_data(key)
+    global __keyboard
+    global __prevPressKey
+
+    if key == __prevPressKey:
+        return
+    else:
+        __keyboard.release()
+        __prevPressKey = key
+        __keyboard.send_data(key)
 
 
 def release():
+    global __keyboard
+    global __prevPressKey
+    __prevPressKey = None
     __keyboard.release()
 
 
