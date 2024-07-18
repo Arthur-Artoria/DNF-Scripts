@@ -194,7 +194,7 @@ class MonsterRoom(Room):
         roleX, roleY = self.role.getPoint()
         vMedium = 687
 
-        if abs(roleY - vMedium) > 80 and self.__matchDoorCount == 0:
+        if abs(roleY - vMedium) > 50 and self.__matchDoorCount == 0:
             direction = roleY > vMedium and "Up" or "Down"
             self.role.move(direction, self.role.speed)
         else:
