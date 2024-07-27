@@ -1,7 +1,7 @@
 from time import sleep, time
 from core import Sell, System
 from core.Dungeon import Dungeon
-from services import Controller, Screen, ScreenStream
+from services import Controller, Logger, Screen, ScreenStream
 
 
 class City:
@@ -54,7 +54,7 @@ class City:
         if not storePoint:
             return
 
-        print("发现商店魔法书", storePoint)
+        Logger.log("发现商店魔法书", storePoint)
 
         self.matchStoreCount = 4
         Sell.openStore(storePoint)
@@ -91,7 +91,7 @@ class City:
         if not self.dungeon:
             return
 
-        # print("角色疲劳已用光")
+        # Logger.log("角色疲劳已用光")
         self.dungeon.backCelia()
 
     def dispatchRole(self):

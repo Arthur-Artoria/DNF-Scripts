@@ -4,7 +4,7 @@ import time
 from typing import Literal
 
 from core import Roles_local, System
-from services import Controller, Screen
+from services import Controller, Logger, Screen
 
 __BASE_PATH = "images/roles_local"
 __roleList = Roles_local.roleList
@@ -31,7 +31,7 @@ def selectRole(index=__roleIndex) -> int:
     __roleIndex = index + 1
 
     if "skip" in role and role["skip"] is True:
-        print(role["name"], "跳过")
+        Logger.log(role["name"], "跳过")
         return selectRole(__roleIndex)
 
     target = f"{__BASE_PATH}/{index}.png"

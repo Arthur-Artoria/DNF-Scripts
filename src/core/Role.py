@@ -3,7 +3,7 @@ from random import randint
 from time import sleep
 import time
 from typing import Literal
-from services import Controller, Screen, ScreenStream
+from services import Controller, Logger, Screen, ScreenStream
 from constants import Monitor
 
 type Direction = Literal[
@@ -57,11 +57,11 @@ class Role:
         x, y = point
         self.prevPoint = self.point
         self.point = (x + offsetX, y + offsetY)
-        # print("上一次角色位置：", self.prevPoint, "当前角色位置：", self.point)
+        # Logger.log("上一次角色位置：", self.prevPoint, "当前角色位置：", self.point)
 
     def setRoleLocation(self):
         locations = ScreenStream.match(self.target)
-        # print("匹配角色位置", locations)
+        # Logger.log("匹配角色位置", locations)
         self.__updateRoleLocation(locations)
 
     def syncSetRoleLocation(self):
@@ -113,7 +113,7 @@ class Role:
             self.move(direction, 0.3)
             count += 1
             self.__refreshRoleLocationCount += 1
-            # print(f"角色向{direction}移动{count}次")
+            # Logger.log(f"角色向{direction}移动{count}次")
             if count % microCycleCount == 0:
                 break
 
@@ -132,7 +132,7 @@ class Role:
         x, y = target
         roleX, roleY = self.point
 
-        # print("move 偏移", offset)
+        # Logger.log("move 偏移", offset)
 
         hDirection = ""
         vDirection = ""
@@ -182,7 +182,7 @@ class Role:
         if not point:
             return
 
-        print("怪物位置", point)
+        Logger.log("怪物位置", point)
 
         if self.__move(point, offset, 0.5):
             self.syncSetRoleLocation()
@@ -241,9 +241,15 @@ class Role:
         return count
 
     def ticketAttack(self):
-        Controller.press(self.__ticket["key"], self.__ticket["duration"])
+        ticket = self.__ticket
+        if (time.time() - ticket["dispatch"]) > ticket["CD"]:
+            ticket["dispatch"] = time.time()
+            Controller.press(ticket["key"], 0.1, ticket["duration"])
+        else:
+            self.skillAttack()
 
     def buff(self):
+        self.__ticket["dispatch"] = 0
         for buff in self.__buffList:
             Controller.press(buff, 0.1, 0.1)
 

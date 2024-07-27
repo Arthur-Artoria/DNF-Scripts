@@ -3,7 +3,7 @@ import os
 import time
 from core import Roles_local, SelectRole
 from core.Dungeon import Dungeon
-from services import Controller, ScreenStream
+from services import Controller, Logger, ScreenStream
 from core.City import City
 
 
@@ -12,10 +12,10 @@ def main():
     while True:
         Controller.setup()
         roleIndex = SelectRole.selectRole(roleIndex)
-        print(f"第 {roleIndex} 个角色")
+        Logger.log(f"第 {roleIndex} 个角色")
 
         if roleIndex == -1:
-            print("关闭")
+            Logger.log("关闭")
             Controller.close()
             os.system("shutdown -s -t  10 ")
             break
@@ -41,6 +41,6 @@ if __name__ == "__main__":
         main()
     except Exception as error:
         Controller.close()
-        print("程序异常退出", error)
+        Logger.log("程序异常退出", error)
     except:
         Controller.close()

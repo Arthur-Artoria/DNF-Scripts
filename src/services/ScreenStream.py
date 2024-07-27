@@ -5,7 +5,7 @@ import mss
 import numpy as np
 import cv2 as cv
 
-from services import Controller, Screen
+from services import Controller, Logger, Screen
 from constants import Monitor
 
 type Listener = Callable[[], bool | None]
@@ -22,7 +22,7 @@ def listen():
     global __shotGray
     global __listenFlag
 
-    print("启动监听器")
+    Logger.log("启动监听器")
     __listenFlag = True
 
     with mss.mss() as sct:
@@ -46,7 +46,7 @@ def __close() -> bool:
 def __dispatchListenerList():
     global __listenerList
 
-    # print("监听器触发", len(__listenerList), __listenerList)
+    # Logger.log("监听器触发", len(__listenerList), __listenerList)
 
     for matcher in __listenerList:
         if not __listenFlag:
@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
     def matcher():
         point = Screen.getFirstPoint(match("images/dungeons/roleEnd.png"))
-        print(point)
+        Logger.log(point)
 
     addListener(matcher)
 

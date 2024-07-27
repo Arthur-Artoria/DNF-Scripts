@@ -13,7 +13,7 @@ from core.MonsterRoom import MonsterRoom
 from core.FirstRoom import FirstRoom
 from core.Role import Direction, Role
 from core.System import closeSystemSetting
-from services import Controller, Screen, ScreenStream
+from services import Controller, Logger, Screen, ScreenStream
 from core import Roles_local as Roles
 from core.Room import Room
 
@@ -116,7 +116,7 @@ class Dungeon:
         if time.time() - self.room.startTime < 90:
             return
 
-        print("超时")
+        Logger.log("超时")
         self.backCity()
 
     def createRoom(self, row: int, col: int, crevice: bool = False):
@@ -186,7 +186,7 @@ class Dungeon:
         ScreenStream.addListener(self.matchDungeonEntered)
 
     def backCity(self):
-        print("返回城镇")
+        Logger.log("返回城镇")
 
         self.destroyRoom()
 
@@ -201,10 +201,10 @@ class Dungeon:
         roleEnd = ScreenStream.exist("images/dungeons/roleEnd.png")
 
         if roleEnd:
-            print("疲劳已用光", roleEnd)
+            Logger.log("疲劳已用光", roleEnd)
             self.switchRole()
         else:
-            print("重新挑战")
+            Logger.log("重新挑战")
             self.reenterDungeon()
 
     def switchRole(self):

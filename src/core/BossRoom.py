@@ -5,7 +5,7 @@ from constants.DNFConfig_local import COLLECT
 from core import Roles_local, Sell
 from core.Role import Role
 from core.Room import Room
-from services import Controller, ScreenStream
+from services import Controller, Logger, ScreenStream
 
 
 class BossRoom(Room):
@@ -27,7 +27,7 @@ class BossRoom(Room):
 
         self.initBossList()
         ScreenStream.addListener(self.matchBossList)
-        print("Boss房间 初始化")
+        Logger.log("Boss房间 初始化")
 
     def initBossList(self):
         self.bossList = list(
@@ -44,7 +44,7 @@ class BossRoom(Room):
             exitBoss = ScreenStream.exist(boss)
 
             if exitBoss:
-                print("匹配到Boss", boss)
+                Logger.log("匹配到Boss", boss)
                 self.role.ticketAttack()
                 ScreenStream.addListener(self.matchReward)
 
@@ -54,7 +54,7 @@ class BossRoom(Room):
         if not existReenter:
             return
 
-        print("匹配到奖励")
+        Logger.log("匹配到奖励")
         ScreenStream.removeListener(self.matchBossList)
 
         self.handleStore()
@@ -79,7 +79,7 @@ class BossRoom(Room):
 
     def destroy(self):
         super().destroy()
-        print("Boss房间 销毁")
+        Logger.log("Boss房间 销毁")
         ScreenStream.removeListener(self.matchBossList)
         ScreenStream.removeListener(self.matchReward)
         ScreenStream.removeListener(self.onPickUpEnd)

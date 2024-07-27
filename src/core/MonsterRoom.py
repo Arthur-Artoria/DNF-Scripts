@@ -3,7 +3,7 @@ from threading import Thread
 import threading
 import time
 from core.Role import Direction, Role
-from services import Screen, ScreenStream
+from services import Logger, Screen, ScreenStream
 from core.Room import Room
 
 
@@ -26,6 +26,7 @@ class MonsterRoom(Room):
 
         # 初始化房间状态
         self.released = False
+        self.__firstMatchDrop = True
         self.__matchDoorCount = 0
         self.__roleLocked = False
         self.__hasCounter = False
@@ -97,6 +98,9 @@ class MonsterRoom(Room):
             ScreenStream.removeListener(self.moveToVerticalCenter)
             ScreenStream.removeListener(self.matchMonsterList)
             ScreenStream.addListener(self.__matchCounterList)
+            if self.__firstMatchDrop:
+                time.sleep(1)
+                self.__firstMatchDrop = False
             if not self.__noDropList:
                 ScreenStream.addListener(self.matchDropList)
         else:
@@ -194,7 +198,7 @@ class MonsterRoom(Room):
         roleX, roleY = self.role.getPoint()
         vMedium = 687
 
-        if abs(roleY - vMedium) > 50 and self.__matchDoorCount == 0:
+        if abs(roleY - vMedium) > 80 and self.__matchDoorCount == 0:
             direction = roleY > vMedium and "Up" or "Down"
             self.role.move(direction, self.role.speed)
         else:
@@ -217,16 +221,16 @@ class MonsterRoom(Room):
         roleX, roleY = self.role.getPoint()
         vMedium = 687
 
-        if abs(roleY - vMedium) > 50 and self.__matchDoorCount == 0:
+        if abs(roleY - vMedium) > 80 and self.__matchDoorCount == 0:
             direction = roleY > vMedium and "Up" or "Down"
             self.role.move(direction, 0.1)
         else:
             if self.__mainDirectionNotGo:
-                print("第一次在主方向移动")
+                Logger.log("第一次在主方向移动")
                 self.__mainDirectionNotGo = False
                 self.role.move(self.nextRoomDirection, 1.5)
             elif self.role.checkLock():
-                print("角色卡住")
+                Logger.log("角色卡住")
                 # 检测卡住的竖直方向
                 self.__roleLocked = True
                 direction = self.__matchDoorSecondaryDirection or "Down"
@@ -235,12 +239,12 @@ class MonsterRoom(Room):
                 self.__matchDoorSecondaryDirection = direction
                 self.role.move(f"{direction} {self.nextRoomDirection}", 1.5)  # type: ignore
             elif self.__roleLocked:
-                print("角色在主方向卡住")
+                Logger.log("角色在主方向卡住")
                 direction = self.__matchDoorSecondaryDirection
                 self.__matchDoorCount += 1
                 self.role.move(f"{direction} {self.nextRoomDirection}", 1.5)  # type: ignore
             else:
-                print("主方向没有卡住")
+                Logger.log("主方向没有卡住")
                 self.role.move(self.nextRoomDirection, 1.5)
 
     def __matchVerticalDoor(self):
@@ -255,7 +259,7 @@ class MonsterRoom(Room):
                 self.__mainDirectionNotGo = False
                 self.role.move(self.nextRoomDirection, 1.5)
             elif self.role.checkLock():
-                print("角色卡住")
+                Logger.log("角色卡住")
                 self.__roleLocked = True
                 direction = self.__matchDoorSecondaryDirection or "Left"
                 direction = direction == "Right" and "Left" or "Right"
@@ -263,7 +267,7 @@ class MonsterRoom(Room):
                 self.__matchDoorSecondaryDirection = direction
                 self.role.move(f"{direction} {self.nextRoomDirection}", 1.5)  # type: ignore
             elif self.__roleLocked:
-                print("角色在主方向卡住")
+                Logger.log("角色在主方向卡住")
                 direction = self.__matchDoorSecondaryDirection
                 self.__matchDoorCount += 1
                 self.role.move(f"{direction} {self.nextRoomDirection}", 1.5)  # type: ignore

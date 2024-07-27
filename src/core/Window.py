@@ -1,7 +1,7 @@
 from time import sleep
 import win32gui
 
-from services import Screen
+from services import Logger, Screen
 from services import Controller
 
 __handler: int
@@ -32,7 +32,7 @@ def __setWindowSize():
     global __rect
 
     locations = Screen.match("images/settings.png")
-    print(locations)
+    Logger.log(locations)
     # TODO：通过游戏菜单调整游戏窗口大小
     __rect = win32gui.GetWindowRect(__handler)
 

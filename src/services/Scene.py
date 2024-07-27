@@ -1,4 +1,5 @@
 import ScreenStream
+from services import Logger
 
 
 class Scene:
@@ -10,7 +11,7 @@ class Scene:
     def match(self):
         locations = ScreenStream.match(self.target)
         for location in zip(*locations[::-1]):
-            print("目标命中:", self.name, "在屏幕坐标:", location)
+            Logger.log("目标命中:", self.name, "在屏幕坐标:", location)
 
     def action(self):
         pass

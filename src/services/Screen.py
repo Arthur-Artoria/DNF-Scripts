@@ -9,6 +9,7 @@ import numpy as np
 from numpy._typing import NDArray
 import cv2 as cv
 from constants import Monitor
+from services import Logger
 
 type Point = tuple[int, int]
 type Locations = tuple[NDArray[np.intp], ...]
@@ -91,6 +92,6 @@ if __name__ == "__main__":
 
     def matcher():
         point = getFirstPoint(match("images/dungeons/roleEnd.png"))
-        print(point)
+        Logger.log(point)
 
     matcher()
