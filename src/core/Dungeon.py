@@ -19,16 +19,16 @@ from core.Room import Room
 
 
 class Dungeon:
-    ROOM_TARGET = "images/dungeons/room1.png"
+    ROOM_TARGET = "images/dungeons/room3.png"
     __ROOM_CREVICE_TARGET = "images/dungeons/room2.png"
     __ROLE_TARGET = "images/dungeons/roleTarget.png"
     roomList = {
-        "3_0": {"nextRoomDirection": "Up", "first": True},
-        "2_0": {"nextRoomDirection": "Right"},
-        "2_1": {"nextRoomDirection": "Up"},
-        "1_1": {"nextRoomDirection": "Up"},
-        "0_1": {"nextRoomDirection": "Right"},
-        "0_2": {"nextRoomDirection": "Right"},
+        "1_0": {"nextRoomDirection": "Right", "first": True},
+        "1_1": {"nextRoomDirection": "Right"},
+        "1_2": {"nextRoomDirection": "Right"},
+        "1_3": {"nextRoomDirection": "Right"},
+        "1_4": {"nextRoomDirection": "Right"},
+        # "0_2": {"nextRoomDirection": "Right"},
         "boss": {"boss": True},
     }
 
@@ -98,9 +98,14 @@ class Dungeon:
         return ScreenStream.addListener(self.matchDungeonEntered)
 
     def matchDungeonEntered(self):
-        entered = ScreenStream.exist(self.ROOM_TARGET)
+        point = Screen.getFirstPoint(ScreenStream.match(self.ROOM_TARGET))
 
-        if not entered:
+        if not point:
+            return
+
+        (x, y) = point
+
+        if x < 1028:
             return
 
         self.role.buff()
@@ -155,10 +160,10 @@ class Dungeon:
             self.finishCount = 0
 
     def matchRoom(self):
-        x = 1081
-        y = 70
+        x = 1028
+        y = 64
         size = 27
-        area = (x, y, 1190, 180)
+        area = (x, y, 1190, 145)
         locations = ScreenStream.match(self.ROOM_TARGET, area)
         point = Screen.getFirstPoint(locations, area)
         crevice = False
@@ -231,16 +236,22 @@ class Dungeon:
 
 
 if __name__ == "__main__":
-    Controller.setup()
+    # Controller.setup()
 
-    dungeon = Dungeon(
-        name="Silence",
-        area="images/dungeons/1.png",
-        target="images/dungeons/target.png",
-        offset={"x": 50, "y": 50},
-        roleOption=Roles.roleList[3],
-        direction="Right",
-    )
+    # dungeon = Dungeon(
+    #     name="Silence",
+    #     area="images/dungeons/1.png",
+    #     target="images/dungeons/target.png",
+    #     offset={"x": 50, "y": 50},
+    #     roleOption=Roles.roleList[3],
+    #     direction="Right",
+    # )
 
+    # ScreenStream.listen()
+    # Controller.close()
+    def room():
+        point = Screen.getFirstPoint(ScreenStream.match("images/dungeons/room3.png"))
+        print(point)
+
+    ScreenStream.addListener(room)
     ScreenStream.listen()
-    Controller.close()

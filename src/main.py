@@ -26,7 +26,7 @@ def main():
             name="Silence",
             area="images/dungeons/1.png",
             target="images/dungeons/mapTarget.png",
-            offset={"x": 200, "y": 10},
+            offset={"x": 100, "y": 10},
             roleOption=roleOption,
             direction="Right",
         )

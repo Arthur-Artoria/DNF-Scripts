@@ -2,8 +2,9 @@ import os
 from threading import Thread
 import threading
 import time
+from core import Roles_local
 from core.Role import Direction, Role
-from services import Logger, Screen, ScreenStream
+from services import Controller, Logger, Screen, ScreenStream
 from core.Room import Room
 
 
@@ -11,7 +12,7 @@ class MonsterRoom(Room):
     __DROP_BASE_PATH = "images/drops/"
     __MONSTER_BASE_PATH = "images/monsters/"
     __COUNTER_BASE_PATH = "images/counter/"
-    DOOR = "images/dungeons/door2.png"
+    DOOR = "images/dungeons/door.png"
     RELEASE = "images/dungeons/empty.png"
 
     def __init__(
@@ -25,7 +26,9 @@ class MonsterRoom(Room):
         self.nextRoomDirection: Direction = nextRoomDirection
 
         # 初始化房间状态
-        self.released = False
+        self.released = None
+        # 匹配门（真正的门）的次数
+        self.matchDoorCount = 0
         self.__firstMatchDrop = True
         self.__matchDoorCount = 0
         self.__roleLocked = False
@@ -87,12 +90,8 @@ class MonsterRoom(Room):
 
     # 检查房间是否已可以同行，即怪物已全部清除
     def matchRoomStatus(self):
-        point = Screen.getFirstPoint(ScreenStream.match(self.RELEASE))
-        self.released = point is not None
-
-        if not point:
-            point = Screen.getFirstPoint(ScreenStream.match(self.DOOR))
-            self.released = point is not None
+        if self.released is not True:
+            self.released = ScreenStream.exist(self.RELEASE)
 
         if self.released:
             ScreenStream.removeListener(self.moveToVerticalCenter)
@@ -108,6 +107,26 @@ class MonsterRoom(Room):
             ScreenStream.removeListener(self.matchNextRoomDoor)
             if not self.__firstMove:
                 ScreenStream.addListener(self.moveToVerticalCenter)
+
+    def matchRelease(self):
+        empty = ScreenStream.exist(self.RELEASE)
+
+        if empty:
+            self.matchDoorCount = 0
+            return True
+
+        if self.matchDoorCount >= 20:
+            self.matchDoorCount = 0
+            return False
+
+        self.matchDoorCount += 1
+        empty = ScreenStream.exist(self.DOOR)
+
+        if empty:
+            self.matchDoorCount = 0
+            return True
+        else:
+            return None
 
     def __refreshRolePosition(self):
         self.role.refreshRoleLocation()
@@ -127,6 +146,14 @@ class MonsterRoom(Room):
         if len(self.__monsterPointList) > 0:
             self.role.attack(self.__monsterPointList, {"x": 800, "y": 120})
         else:
+            count = 0
+            while count < 50:
+                existDoor = Screen.match(self.DOOR)
+                if existDoor:
+                    self.released = True
+                    return
+                count += 1
+                time.sleep(0.01)
             self.__refreshRolePosition()
 
     def __matchMonster(self, monster: str):
@@ -287,11 +314,11 @@ class MonsterRoom(Room):
 
 
 if __name__ == "__main__":
-    pass
+    # pass
     # time.sleep(2)
-    # Controller.setup()
-    # role = Role("images/roles_local/3.png")
-    # room = Room(role, 3, 0, "Right")
-    # ScreenStream.listen()
+    Controller.setup()
+    role = Role("images/dungeons/roleTarget.png", Roles_local.roleList[0])
+    room = MonsterRoom("1_0", role, "Right")
+    ScreenStream.listen()
     # Controller.release()
-    # Controller.close()
+    Controller.close()
