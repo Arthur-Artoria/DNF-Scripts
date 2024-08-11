@@ -132,6 +132,7 @@ class MonsterRoom(Room):
         self.role.refreshRoleLocation()
 
     def matchMonsterList(self):
+        # print("匹配怪物列表")
         self.__monsterPointList = []
         self.__monsterThreadList = []
 
@@ -143,12 +144,13 @@ class MonsterRoom(Room):
         for thread in self.__monsterThreadList:
             thread.join()
 
+        # print(self.__monsterPointList)
         if len(self.__monsterPointList) > 0:
             self.role.attack(self.__monsterPointList, {"x": 800, "y": 120})
         else:
             count = 0
             while count < 50:
-                existDoor = Screen.match(self.DOOR)
+                existDoor = Screen.exist(self.DOOR)
                 if existDoor:
                     self.released = True
                     return
@@ -227,6 +229,7 @@ class MonsterRoom(Room):
 
         if abs(roleY - vMedium) > 80 and self.__matchDoorCount == 0:
             direction = roleY > vMedium and "Up" or "Down"
+            # print("moveToVerticalCenter", direction, roleY, vMedium)
             self.role.move(direction, self.role.speed)
         else:
             self.role.move("Right", 0.01)
@@ -317,8 +320,15 @@ if __name__ == "__main__":
     # pass
     # time.sleep(2)
     Controller.setup()
-    role = Role("images/dungeons/roleTarget.png", Roles_local.roleList[0])
-    room = MonsterRoom("1_0", role, "Right")
+    role = Role("images/dungeons/roleTarget.png", Roles_local.roleList[4])
+    room = MonsterRoom("1_2", role, "Right")
     ScreenStream.listen()
     # Controller.release()
     Controller.close()
+
+    # def monster():
+    #     point = Screen.getFirstPoint(ScreenStream.match("images/monsters/15.png"))
+    #     print(point)
+
+    # ScreenStream.addListener(monster)
+    # ScreenStream.listen()
